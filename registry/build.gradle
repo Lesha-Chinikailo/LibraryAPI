@@ -6,10 +6,24 @@ plugins {
 
 group = 'com.java'
 version = '0.0.1-SNAPSHOT'
+//sourceCompatibility = '21'
+
 
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+ext {
+    set('springCloudVersion', "Hoxton.SR1")
+}
+
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.java.registry.RegistryApplication'
+        )
     }
 }
 
@@ -18,11 +32,27 @@ repositories {
 }
 
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server"
+    implementation "org.springframework.cloud:spring-cloud-starter-config"
+    testImplementation "junit:junit:4.1"
 }
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
+//dependencies {
+//    implementation 'org.springframework.boot:spring-boot-starter'
+//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+//    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+//}
 
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+
+
+

@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.0'
     id 'io.spring.dependency-management' version '1.1.6'
+    id "io.freefair.lombok" version "8.0.1"
 }
 
 group = 'com.java'
@@ -17,10 +18,37 @@ repositories {
     mavenCentral()
 }
 
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'com.java.bookservice.BookServiceApplication'
+        )
+    }
+}
+
+//springBoot { mainClassName = 'com.java.bookservice.BookServiceApplication' }
+
+ext {
+    set('springCloudVersion', "Hoxton.SR1")
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
+}
+
 dependencies {
-    implementation 'org.springframework.boot:spring-boot-starter'
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    implementation 'org.springframework.boot:spring-boot-starter-web:3.4.0'
+    implementation "org.springframework.boot:spring-boot-starter-actuator:3.4.0"
+    implementation "org.springframework.boot:spring-boot-starter-data-jpa"
+    implementation "org.springframework.cloud:spring-cloud-starter-config"
+    implementation "org.springframework.cloud:spring-cloud-starter-openfeign"
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client"
+    implementation "org.springframework.cloud:spring-cloud-starter-sleuth"
+    implementation "org.springframework.cloud:spring-cloud-starter-netflix-hystrix"
+    implementation 'org.postgresql:postgresql:42.7.2'
+    testImplementation "junit:junit:4.13.2"
 }
 
 tasks.named('test') {
