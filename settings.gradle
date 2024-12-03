@@ -1,0 +1,5 @@
+rootProject.name = 'LibraryAPI'
+include 'book-service'
+include 'config-service'
+include 'gateway'
+include 'registry'
