@@ -1,5 +1,7 @@
 package com.java.bookservice.controller.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.persistence.Column;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -7,6 +9,7 @@ import lombok.Getter;
 @AllArgsConstructor
 public class BookRequestDTO {
 
+    @JsonProperty("isbn")
     private String ISBN;
 
     private String title;

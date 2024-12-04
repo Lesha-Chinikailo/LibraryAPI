@@ -3,6 +3,7 @@ package com.java.bookservice.controller;
 import com.java.bookservice.controller.dto.BookRequestDTO;
 import com.java.bookservice.controller.dto.BookResponseDTO;
 import com.java.bookservice.mapper.BookMapper;
+import com.java.bookservice.mapper.BookResponseDTOMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.service.BookService;
 import lombok.RequiredArgsConstructor;
