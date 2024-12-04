@@ -10,7 +10,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor()
@@ -23,11 +25,24 @@ public class BookController {
     public BookResponseDTO getBookById(@PathVariable Long id) {
         Optional<Book> maybeBook = bookService.findBookById(id);
         if (maybeBook.isPresent()) {
-            Book book = maybeBook.get();
-            BookResponseDTO responseDTO = bookMapper.bookToResponseDTO(book);
-            return responseDTO;
+            return bookMapper.bookToResponseDTO(maybeBook.get());
         }
         return new ResponseEntity<BookResponseDTO>(HttpStatus.NOT_FOUND).getBody();
+    }
+
+    @GetMapping("/isbn/{isbn}")
+    public BookResponseDTO getBookByISBN(@PathVariable String isbn) {
+        Book book = bookService.findBookByISBN(isbn);
+        return bookMapper.bookToResponseDTO(book);
+        //return new ResponseEntity<BookResponseDTO>(HttpStatus.NOT_FOUND).getBody();
+    }
+
+    @GetMapping("/")
+    public List<BookResponseDTO> getAllBook() {
+        return bookService.getAllBooks()
+                .stream()
+                .map(bookMapper::bookToResponseDTO)
+                .collect(Collectors.toList());
     }
 
     @PostMapping("/")
@@ -44,6 +59,6 @@ public class BookController {
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteBook(@PathVariable Long id) {
-
+        bookService.deleteBook(id);
     }
 }

@@ -6,7 +6,6 @@ import com.java.bookservice.mapper.BookMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.repository.BookRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,7 +19,7 @@ public class BookService {
     private final BookMapper bookMapper;
 
     public Long createBook(BookRequestDTO dto){
-        Book book = bookMapper.toEntity(dto);
+        Book book = bookMapper.RequestDTOToBook(dto);
         return bookRepository.save(book).getId();
     }
 
@@ -29,7 +28,8 @@ public class BookService {
     }
 
     public Optional<Book> findBookById(Long id){
-        return Optional.ofNullable(bookRepository.findById(id)
+        Optional<Book> byId = bookRepository.findById(id);
+        return Optional.ofNullable(byId
                 .orElseThrow(() -> new BookNotFoundException("Unable to find book with id: " + id)));
     }
 

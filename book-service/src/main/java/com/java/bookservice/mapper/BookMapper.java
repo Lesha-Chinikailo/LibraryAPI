@@ -8,12 +8,12 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Component;
 
 @Component
-@Mapper(componentModel = "spring")
+@Mapper()//(componentModel = "spring")
 public interface BookMapper {
 
     BookMapper INSTANCE = Mappers.getMapper(BookMapper.class);
 
-    Book toEntity(BookRequestDTO dto);
+    Book RequestDTOToBook(BookRequestDTO dto);
 
     BookResponseDTO bookToResponseDTO(Book book);
 }
