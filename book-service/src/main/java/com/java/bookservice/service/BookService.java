@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor()
@@ -20,11 +21,28 @@ public class BookService {
 
     public Long createBook(BookRequestDTO dto){
         Book book = bookMapper.RequestDTOToBook(dto);
+        try {
+            Book bookByISBN = bookRepository.findByISBN(book.getISBN());
+            if(bookByISBN != null){
+                return -1L;
+            }
+        }
+        catch (Exception e){
+            return -1L;
+        }
         return bookRepository.save(book).getId();
     }
 
     public List<Book> getAllBooks(){
         return bookRepository.findAll();
+    }
+
+    public List<Book> getAllFreeBook(List<Long> ids){
+         return bookRepository.findAllById(ids);
+//        return bookRepository.findAll()
+//                .stream()
+//                .filter(book -> ids.contains(book.getId()))
+//                .collect(Collectors.toList());
     }
 
     public Optional<Book> findBookById(Long id){

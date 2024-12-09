@@ -1,5 +1,6 @@
 package com.java.libraryservice.mapper;
 
+import com.java.libraryservice.controller.dto.BookRecordRequestDTO;
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
 import com.java.libraryservice.models.BookRecord;
 import org.mapstruct.Mapper;
@@ -10,7 +11,7 @@ public interface BookRecordMapper {
 
     BookRecordMapper INSTANCE = Mappers.getMapper(BookRecordMapper.class);
 
-    //Book RequestDTOToBook(BookRequestDTO dto);
+    BookRecord RequestDTOToBook(BookRecordRequestDTO dto);
 
     BookRecordResponseDTO bookToResponseDTO(BookRecord bookRecord);
 }

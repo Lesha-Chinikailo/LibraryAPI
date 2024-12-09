@@ -1,6 +1,8 @@
 package com.java.libraryservice.service;
 
+import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
 import com.java.libraryservice.exception.BookRecordNotFoundException;
+import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.repository.BookRecordRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +17,7 @@ import java.util.Optional;
 public class BookRecordService {
 
     private final BookRecordRepository bookRecordRepository;
+    private final BookRecordMapper bookRecordMapper;
 
     public List<BookRecord> findAll() {
         return bookRecordRepository.findAll();
@@ -42,25 +45,31 @@ public class BookRecordService {
         return bookRecordRepository.save(record).getId();
     }
 
-    public Long TakeBook(Long bookId) {
+    public BookRecordResponseDTO TakeBook(Long bookId) {
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
+            if(bookRecord.getDateTimeTakeOfBook() != null) {
+                return null;
+            }
             LocalDateTime dateTimeNow = LocalDateTime.now();
             bookRecord.setDateTimeTakeOfBook(dateTimeNow);
             bookRecord.setDateTimeReturnOfBook(dateTimeNow.plusDays(30));
-            return bookRecordRepository.save(bookRecord).getId();
+            return bookRecordMapper.bookToResponseDTO(bookRecordRepository.save(bookRecord));
         }
         throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
     }
 
-    public Long ReturnBook(Long bookId) {
+    public BookRecordResponseDTO ReturnBook(Long bookId) {
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
+            if(bookRecord.getDateTimeTakeOfBook() == null) {
+                return null;
+            }
             bookRecord.setDateTimeReturnOfBook(null);
             bookRecord.setDateTimeTakeOfBook(null);
-            return bookRecordRepository.save(bookRecord).getId();
+            return bookRecordMapper.bookToResponseDTO(bookRecordRepository.save(bookRecord));
         }
         throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
     }

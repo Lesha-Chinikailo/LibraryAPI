@@ -8,6 +8,9 @@ build
 account-service/build
 account-service/.gradle
 
+LibraryService/build
+LibraryService/.gradle
+
 config-service/build
 config-service/.gradle
 
