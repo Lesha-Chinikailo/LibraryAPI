@@ -38,22 +38,16 @@ dependencyManagement {
 dependencies {
     implementation 'org.hibernate:hibernate-core:6.6.3.Final'
 
-    implementation 'org.mapstruct:mapstruct:1.6.3'
-    annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
-
     implementation 'org.projectlombok:lombok:1.18.20'
     annotationProcessor 'org.projectlombok:lombok:1.18.20'
 
+    implementation 'org.mapstruct:mapstruct:1.6.3'
+    annotationProcessor "org.mapstruct:mapstruct-processor:1.6.3"
+
     implementation 'jakarta.servlet:jakarta.servlet-api:6.0.0'
 
-//    implementation 'io.springfox:springfox-swagger2:3.0.0'
-//    implementation 'io.springfox:springfox-boot-starter:3.0.0'
-//    implementation 'io.springfox:springfox-swagger-ui:3.0.0'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.0.3'
     implementation 'org.springdoc:springdoc-openapi-ui:1.8.0'
-//    implementation 'org.springdoc-openapi-ui:1.6.15'
-
-//    implementation 'io.springfox:springfox-boot-starter:3.0.0'
 
     implementation 'org.springframework.cloud:spring-cloud-starter-bootstrap'
     implementation 'org.springframework.boot:spring-boot-starter-web'
@@ -71,12 +65,6 @@ dependencies {
     implementation 'io.micrometer:micrometer-tracing-bridge-brave'
     implementation 'io.micrometer:micrometer-observation'
 }
-
-//dependencies {
-//    implementation 'org.springframework.boot:spring-boot-starter'
-//    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-//    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-//}
 
 tasks.named('test') {
     useJUnitPlatform()

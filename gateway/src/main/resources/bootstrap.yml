@@ -1,9 +1,26 @@
 spring:
+  main:
+    web-application-type: reactive
   application:
     name: gateway
   cloud:
+#    gateway:
+#      discovery:
+#        locator:
+#          enabled: true
+#          lower-case-service-id: true
+#      enabled: false
+    compatibility-verifier:
+      enabled: false
     config:
       uri: http://localhost:8001
       fail-fast: true
       password: admin
       username: user
+#      enabled: false
+
+logging:
+  level:
+    root: "warn"
+    org.springframework.web: "debug"
+    org.hibernate: "error"

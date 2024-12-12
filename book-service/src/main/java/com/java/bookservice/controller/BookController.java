@@ -22,11 +22,17 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor()
+//@RequestMapping("/books")
 public class BookController {
 
     private final BookService bookService;
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate;
+
+    @GetMapping("/books")
+    public List<BookResponseDTO> test() {
+        return new ArrayList<>();
+    }
 
     @GetMapping("/{id}")
     public BookResponseDTO getBookById(@PathVariable Long id) {
@@ -68,7 +74,7 @@ public class BookController {
                 .collect(Collectors.toList());
     }
 
-    @PostMapping("/")
+    @PostMapping("/create")
     public Long createBook(@RequestBody BookRequestDTO bookRequestDTO, HttpServletResponse response) {
         Long bookId = bookService.createBook(bookRequestDTO);
         if(bookId == -1){
