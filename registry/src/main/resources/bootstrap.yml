@@ -5,8 +5,8 @@ spring:
     name: registry
   cloud:
     config:
-      enabled: true
-      uri: http://localhost:8001
+#      enabled: true
+      uri: http://config-service:8001
       fail-fast: false
       password: admin
       username: user
