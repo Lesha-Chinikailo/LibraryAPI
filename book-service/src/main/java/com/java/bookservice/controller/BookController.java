@@ -29,11 +29,6 @@ public class BookController {
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate;
 
-    @GetMapping("/books")
-    public List<BookResponseDTO> test() {
-        return new ArrayList<>();
-    }
-
     @GetMapping("/{id}")
     public BookResponseDTO getBookById(@PathVariable Long id) {
         Optional<Book> maybeBook = bookService.findBookById(id);
@@ -59,7 +54,7 @@ public class BookController {
 
     @GetMapping("/freeBooks")
     public List<BookResponseDTO> getAllFreeBooks() {
-        String url = "http://LibraryService:8082/records/free/ids"; // URL второго сервиса
+        String url = "http://library-service:8082/records/free/ids"; // URL второго сервиса
 
         var response = restTemplate.getForEntity(url, Long[].class);
         var body = response.getBody();
@@ -80,7 +75,7 @@ public class BookController {
         if(bookId == -1){
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         }
-        String url = "http://LibraryService:8082/records/";
+        String url = "http://library-service:8082/records/";
 
         HttpHeaders headers = new HttpHeaders();
         headers.set("Content-Type", "application/json");

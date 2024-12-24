@@ -4,38 +4,25 @@ services:
     image: postgres:17 # 13
     container_name: postgres
     environment:
-#      POSTGRES_USERNAME
       POSTGRES_USER: postgresUsername
       POSTGRES_PASSWORD: postgresPassword
       POSTGRES_DB: book_service_database
-#      POSTGRES_MULTIPLE_DATABASES: book_service_database, bookLibrary
-#      PGDATA: /var/lib/postgresql/data/db
       PGDATA: /data/postgres
     ports:
       - 5432:5432
     healthcheck:
-      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgresUsername -d book_service_database'"] #, "pg_isready", "-d", "book_service_database" ]
+      test: [ "CMD-SHELL", "sh -c 'pg_isready -U postgresUsername -d book_service_database'"]
       interval: 10s
       timeout: 5s
       retries: 5
     volumes:
       - postgres:/data/postgres
-#      - ~/apps/postgres:/var/lib/postgresql/data
-#      - ./sql/:/docker-entrypoint-initdb.d
-#      - ./sql/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-#      - ./postgres_data:/var/lib/postgresql/data
-#      - ./sql/pg_hba.conf:/var/lib/postgresql/data/pg_hba.conf
-#    command: ["postgres", "-c", "hba_file=/var/lib/postgresql/data/pg_hba.conf"]
-#      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
-#      - ./postgres.conf:/etc/postgresql/postgresql.conf
-#      - database:/var/lib/postgresql/data
-#    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     depends_on:
       - config-service
     restart: unless-stopped
     networks:
       my_network:
+
 
   pgadmin:
     container_name: pgadmin4_container
@@ -120,13 +107,13 @@ services:
       my_network:
 
   library-service:
-    container_name: LibraryService
+    container_name: library-service
     restart: on-failure
-    build: LibraryService
+    build: library-service
     ports:
       - 8082:8082
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/bookLibrary
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_bookLibrary:5432/book_library
       SPRING_DATASOURCE_USERNAME: postgresUsername
       SPRING_DATASOURCE_PASSWORD: postgresPassword
     depends_on:
@@ -136,16 +123,11 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+    networks:
+      my_network:
 
 volumes:
   postgres:
-#  postgres_data:
-#    driver: local
-#    driver_opts:
-#      type: none
-#      o: bind
-#      device: ./data
-#  db-data:
   pgadmin-data:
 
 networks:

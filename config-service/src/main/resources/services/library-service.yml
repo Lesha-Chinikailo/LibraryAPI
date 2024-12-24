@@ -7,7 +7,7 @@ spring:
     properties:
   datasource:
     platform: postgres
-    url: jdbc:postgresql://postgres:5432/bookLibrary
+    url: jdbc:postgresql://postgres:5432/book_library
     username: postgresUsername
     password: postgresPassword
     driver-class-name: org.postgresql.Driver
