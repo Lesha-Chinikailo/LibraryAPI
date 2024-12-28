@@ -14,10 +14,9 @@ import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -28,6 +27,7 @@ public class BookController {
     private final BookService bookService;
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate;
+    private final Properties configProperties;
 
     @GetMapping("/{id}")
     public BookResponseDTO getBookById(@PathVariable Long id) {
@@ -42,7 +42,7 @@ public class BookController {
     public BookResponseDTO getBookByISBN(@PathVariable String isbn) {
         Book book = bookService.findBookByISBN(isbn);
         return bookMapper.bookToResponseDTO(book);
- }
+    }
 
     @GetMapping("/")
     public List<BookResponseDTO> getAllBook() {
@@ -53,8 +53,8 @@ public class BookController {
     }
 
     @GetMapping("/freeBooks")
-    public List<BookResponseDTO> getAllFreeBooks() {
-        String url = "http://library-service:8082/records/free/ids"; // URL второго сервиса
+    public List<BookResponseDTO> getAllFreeBooks() throws IOException {
+        String url = configProperties.getProperty("url.getFreeBooks");
 
         var response = restTemplate.getForEntity(url, Long[].class);
         var body = response.getBody();
@@ -70,20 +70,25 @@ public class BookController {
     }
 
     @PostMapping("/create")
-    public Long createBook(@RequestBody BookRequestDTO bookRequestDTO, HttpServletResponse response) {
+    public BookResponseDTO createBook(@RequestBody BookRequestDTO bookRequestDTO, HttpServletResponse response) {
         Long bookId = bookService.createBook(bookRequestDTO);
         if(bookId == -1){
             response.setStatus(HttpServletResponse.SC_CONFLICT);
         }
-        String url = "http://library-service:8082/records/";
+        else {
+            String url = configProperties.getProperty("url.createBook");
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
+            HttpHeaders headers = new HttpHeaders();
+            headers.set("Content-Type", "application/json");
 
-        HttpEntity<Long> requestEntity = new HttpEntity<>(bookId, headers);
+            HttpEntity<Long> requestEntity = new HttpEntity<>(bookId, headers);
 
-        ResponseEntity<String> responseFromService = restTemplate.postForEntity(url, requestEntity, String.class);
-        return bookId;
+            restTemplate.postForEntity(url, requestEntity, String.class);
+        }
+
+        return bookId != -1
+                ? bookMapper.bookToResponseDTO(bookService.findBookById(bookId).get())
+                : new BookResponseDTO();
     }
 
     @PutMapping("/{id}")
@@ -93,8 +98,13 @@ public class BookController {
     }
 
     @DeleteMapping("/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteBook(@PathVariable Long id) {
-        bookService.deleteBook(id);
+    public ResponseEntity<String> deleteBook(@PathVariable Long id) {
+        boolean isDeleted = bookService.deleteBook(id);
+        if(isDeleted){
+            return ResponseEntity.ok("Book with Id " + id + " has been deleted successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with Id   " + id);
+        }
     }
 }

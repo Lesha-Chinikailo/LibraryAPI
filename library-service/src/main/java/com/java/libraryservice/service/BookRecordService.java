@@ -45,7 +45,13 @@ public class BookRecordService {
         return bookRecordRepository.save(record).getId();
     }
 
-    public BookRecordResponseDTO TakeBook(Long bookId) {
+    public Optional<BookRecord> findBookRecordById(Long id) {
+        Optional<BookRecord> bookRecordById = bookRecordRepository.findById(id);
+        return Optional.of(bookRecordById)
+                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find book with id: " + id));
+    }
+
+    public BookRecordResponseDTO takeBook(Long bookId) {
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
@@ -55,12 +61,12 @@ public class BookRecordService {
             LocalDateTime dateTimeNow = LocalDateTime.now();
             bookRecord.setDateTimeTakeOfBook(dateTimeNow);
             bookRecord.setDateTimeReturnOfBook(dateTimeNow.plusDays(30));
-            return bookRecordMapper.bookToResponseDTO(bookRecordRepository.save(bookRecord));
+            return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
         throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
     }
 
-    public BookRecordResponseDTO ReturnBook(Long bookId) {
+    public BookRecordResponseDTO returnBook(Long bookId) {
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
@@ -69,7 +75,7 @@ public class BookRecordService {
             }
             bookRecord.setDateTimeReturnOfBook(null);
             bookRecord.setDateTimeTakeOfBook(null);
-            return bookRecordMapper.bookToResponseDTO(bookRecordRepository.save(bookRecord));
+            return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
         throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
     }

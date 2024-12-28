@@ -13,5 +13,5 @@ public interface BookRecordMapper {
 
     BookRecord RequestDTOToBook(BookRecordRequestDTO dto);
 
-    BookRecordResponseDTO bookToResponseDTO(BookRecord bookRecord);
+    BookRecordResponseDTO bookRecordToResponseDTO(BookRecord bookRecord);
 }
