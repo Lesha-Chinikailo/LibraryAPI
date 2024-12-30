@@ -9,11 +9,13 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Validator;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -22,16 +24,36 @@ public class BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
-    private final Validator validator;
+    private final RestTemplate restTemplate;
+    private final Properties configProperties;
 
     public String createBook(BookRequestDTO dto){
-//        Set<ConstraintViolation<BookRequestDTO>> violationResult = validator.validate(dto);
-//        if(!violationResult.isEmpty()){
-//            throw new ConstraintViolationException(violationResult);
-//        }
-
         Book book = bookMapper.RequestDTOToBook(dto);
-        return bookRepository.save(book).getISBN();
+
+        if(!isServiceAvailable()){
+            throw new RuntimeException("Sorry, library is not available. Try again later");
+        }
+
+        Book bookSaved = bookRepository.save(book);
+
+        String url = configProperties.getProperty("url.createBook");
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Content-Type", "application/json");
+
+        HttpEntity<String> requestEntity = new HttpEntity<>(bookSaved.getISBN(), headers);
+
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+
+        return bookSaved.getISBN();
+    }
+
+    private boolean isServiceAvailable() {
+        String urlHealthCheck = configProperties.getProperty("url.healthcheck");
+
+        ResponseEntity<String[]> responseEntity = restTemplate.getForEntity(urlHealthCheck, String[].class);
+
+        return responseEntity.getStatusCode().is2xxSuccessful();
     }
 
     public List<Book> getAllBooks(Long pageNumber, Long pageSize){
@@ -42,12 +64,24 @@ public class BookService {
                 .collect(Collectors.toList());
     }
 
-    public List<Book> getAllFreeBook(List<String> isbns, Long pageNumber, Long pageSize){
-         return bookRepository.findAllById(isbns)
-                 .stream()
-                 .skip((pageNumber - 1) * pageSize)
-                 .limit(pageSize)
-                 .collect(Collectors.toList());
+    public List<Book> getAllFreeBook(Long pageNumber, Long pageSize){
+        if(!isServiceAvailable()){
+            throw new RuntimeException("Sorry, library is not available. Try again later");
+        }
+
+        String url = configProperties.getProperty("url.getFreeBooks");
+
+        var response = restTemplate.getForEntity(url, String[].class);
+        var body = response.getBody();
+        List<String> list = body != null
+                ? Arrays.stream(body).toList()
+                : new ArrayList<>();
+
+        return bookRepository.findAllById(list)
+                .stream()
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
     }
 
     public Optional<Book> findBookById(String isbn){
@@ -55,14 +89,6 @@ public class BookService {
         return Optional.ofNullable(byId
                 .orElseThrow(() -> new BookNotFoundException("Unable to find book with isbn: " + isbn)));
     }
-
-//    public Book findBookByISBN(String ISBN){
-//        Book maybeBook = bookRepository.findByISBN(ISBN);
-//        if(maybeBook == null){
-//            throw new BookNotFoundException("Unable to find book with ISBN: " + ISBN);
-//        }
-//        return maybeBook;
-//    }
 
     public Book updateBook(String isbn, BookRequestDTO dto){
         if(findBookById(isbn).isEmpty()){

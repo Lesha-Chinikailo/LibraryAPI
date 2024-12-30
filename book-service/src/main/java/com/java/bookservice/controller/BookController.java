@@ -22,8 +22,6 @@ public class BookController {
 
     private final BookService bookService;
     private final BookMapper bookMapper;
-    private final RestTemplate restTemplate;
-    private final Properties configProperties;
 
     @GetMapping("/{isbn}")
     public BookResponseDTO getBookById(@PathVariable String isbn) {
@@ -44,38 +42,36 @@ public class BookController {
     }
 
     @GetMapping("/freeBooks")
-    public List<BookResponseDTO> getAllFreeBooks(@RequestParam(defaultValue = "0") Long page,
-                                                 @RequestParam(defaultValue = "10") Long size) {
-        String url = configProperties.getProperty("url.getFreeBooks");
+    public ResponseEntity<List<BookResponseDTO>> getAllFreeBooks(@RequestParam(defaultValue = "0") Long page,
+                                                                 @RequestParam(defaultValue = "10") Long size) {
+        List<Book> allFreeBook;
+        try{
+            allFreeBook = bookService.getAllFreeBook(page, size);
+        }
+        catch (RuntimeException e) {
+            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
 
-        var response = restTemplate.getForEntity(url, String[].class);
-        var body = response.getBody();
-        List<String> list = body != null
-                ? Arrays.stream(body).toList()
-                : new ArrayList<>();
-
-        List<Book> allFreeBook = bookService.getAllFreeBook(list, page, size);
-        return allFreeBook
-                .stream()
-                .map(bookMapper::bookToResponseDTO)
-                .collect(Collectors.toList());
+        return new ResponseEntity<>(
+                allFreeBook
+                        .stream()
+                        .map(bookMapper::bookToResponseDTO)
+                        .collect(Collectors.toList()),
+                HttpStatus.OK);
     }
 
     @PostMapping("/create")
     public BookResponseDTO createBook(@RequestBody @Valid BookRequestDTO bookRequestDTO, HttpServletResponse response) {
-        String bookISBN = bookService.createBook(bookRequestDTO);
-        String url = configProperties.getProperty("url.createBook");
+        String bookISBN;
+        try{
+            bookISBN = bookService.createBook(bookRequestDTO);
+        }
+        catch (RuntimeException e){
+            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
+            return new BookResponseDTO();
+        }
 
-        HttpHeaders headers = new HttpHeaders();
-        headers.set("Content-Type", "application/json");
-
-        HttpEntity<String> requestEntity = new HttpEntity<>(bookISBN, headers);
-
-        restTemplate.postForEntity(url, requestEntity, String.class);
-
-        return bookISBN != null
-                ? bookMapper.bookToResponseDTO(bookService.findBookById(bookISBN).get())
-                : new BookResponseDTO();
+        return bookMapper.bookToResponseDTO(bookService.findBookById(bookISBN).get());
     }
 
     @PutMapping("/{isbn}")
