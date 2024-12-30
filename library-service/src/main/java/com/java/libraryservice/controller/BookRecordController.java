@@ -22,24 +22,27 @@ public class BookRecordController {
     private final BookRecordMapper bookRecordMapper;
 
     @GetMapping("/free")
-    public List<BookRecordResponseDTO> getFreeBookRecords() {
-        return bookRecordService.findAllFreeBook()
+    public List<BookRecordResponseDTO> getFreeBookRecords(@RequestParam(defaultValue = "0") Long page,
+                                                          @RequestParam(defaultValue = "10") Long size) {
+        return bookRecordService.findAllFreeBook(page, size)
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/")
-    public List<BookRecordResponseDTO> getBookRecords() {
-        return bookRecordService.findAll()
+    public List<BookRecordResponseDTO> getBookRecords(@RequestParam(defaultValue = "0") Long page,
+                                                      @RequestParam(defaultValue = "10") Long size) {
+        return bookRecordService.findAll(page, size)
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/free/ids")
-    public List<Long> getFreeBookRecordIds() {
-        return bookRecordService.findAllFreeBookIds();
+    public List<Long> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
+                                           @RequestParam(defaultValue = "10") Long size) {
+        return bookRecordService.findAllFreeBookIds(page, size);
     }
 
     @PostMapping("/")

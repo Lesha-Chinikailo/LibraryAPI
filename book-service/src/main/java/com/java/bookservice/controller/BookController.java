@@ -45,15 +45,17 @@ public class BookController {
     }
 
     @GetMapping("/")
-    public List<BookResponseDTO> getAllBook() {
-        return bookService.getAllBooks()
+    public List<BookResponseDTO> getAllBook(@RequestParam(defaultValue = "0") Long page,
+                                            @RequestParam(defaultValue = "10") Long size) {
+        return bookService.getAllBooks(page, size)
                 .stream()
                 .map(bookMapper::bookToResponseDTO)
                 .collect(Collectors.toList());
     }
 
     @GetMapping("/freeBooks")
-    public List<BookResponseDTO> getAllFreeBooks() throws IOException {
+    public List<BookResponseDTO> getAllFreeBooks(@RequestParam(defaultValue = "0") Long page,
+                                                 @RequestParam(defaultValue = "10") Long size) {
         String url = configProperties.getProperty("url.getFreeBooks");
 
         var response = restTemplate.getForEntity(url, Long[].class);
@@ -62,7 +64,7 @@ public class BookController {
                 ? Arrays.stream(body).toList()
                 : new ArrayList<>();
 
-        List<Book> allFreeBook = bookService.getAllFreeBook(list);
+        List<Book> allFreeBook = bookService.getAllFreeBook(list, page, size);
         return allFreeBook
                 .stream()
                 .map(bookMapper::bookToResponseDTO)

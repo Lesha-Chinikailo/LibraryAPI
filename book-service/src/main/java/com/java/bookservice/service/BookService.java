@@ -33,16 +33,20 @@ public class BookService {
         return bookRepository.save(book).getId();
     }
 
-    public List<Book> getAllBooks(){
-        return bookRepository.findAll();
+    public List<Book> getAllBooks(Long pageNumber, Long pageSize){
+        return bookRepository.findAll()
+                .stream()
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
     }
 
-    public List<Book> getAllFreeBook(List<Long> ids){
-         return bookRepository.findAllById(ids);
-//        return bookRepository.findAll()
-//                .stream()
-//                .filter(book -> ids.contains(book.getId()))
-//                .collect(Collectors.toList());
+    public List<Book> getAllFreeBook(List<Long> ids, Long pageNumber, Long pageSize){
+         return bookRepository.findAllById(ids)
+                 .stream()
+                 .skip((pageNumber - 1) * pageSize)
+                 .limit(pageSize)
+                 .collect(Collectors.toList());
     }
 
     public Optional<Book> findBookById(Long id){

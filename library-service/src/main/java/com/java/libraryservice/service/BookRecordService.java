@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,20 +20,28 @@ public class BookRecordService {
     private final BookRecordRepository bookRecordRepository;
     private final BookRecordMapper bookRecordMapper;
 
-    public List<BookRecord> findAll() {
-        return bookRecordRepository.findAll();
+    public List<BookRecord> findAll(Long pageNumber, Long pageSize) {
+        return bookRecordRepository.findAll()
+                .stream()
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
+                .collect(Collectors.toList());
     }
 
-    public List<BookRecord> findAllFreeBook() {
+    public List<BookRecord> findAllFreeBook(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
                 .toList();
     }
-    public List<Long> findAllFreeBookIds() {
+    public List<Long> findAllFreeBookIds(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
+                .skip((pageNumber - 1) * pageSize)
+                .limit(pageSize)
                 .map(BookRecord::getBookId)
                 .toList();
     }
