@@ -1,5 +1,8 @@
 package com.java.bookservice.config;
 
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.client.RestTemplate;
@@ -25,6 +28,13 @@ public class AppConfig {
         }
         catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Bean
+    public Validator getValidator() {
+        try (ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory()) {
+            return validatorFactory.getValidator();
         }
     }
 }

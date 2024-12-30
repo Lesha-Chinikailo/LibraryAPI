@@ -14,14 +14,15 @@ import lombok.*;
 @Table(name = "book")
 public class Book {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
-    private Long id;
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @Column(name = "id")
+//    private Long id;
 
+    @Id
     @NotNull
     @Column(name = "isbn")
-    @Size(max = 13)
+    @Size(max = 13, min = 9)
     private String ISBN;
 
     @Column(name = "title")
@@ -46,9 +47,7 @@ public class Book {
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = id.hashCode();
-        result = prime * result + ISBN.hashCode();
-        return result;
+        return prime + ISBN.hashCode();
     }
 
     @Override
@@ -62,9 +61,6 @@ public class Book {
         }
 
         Book book = (Book) obj;
-        if(!book.getId().equals(this.id)) {
-            return false;
-        }
 
         return book.getISBN().equals(this.getISBN());
     }

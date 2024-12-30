@@ -6,8 +6,6 @@ import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.service.BookRecordService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,14 +38,14 @@ public class BookRecordController {
     }
 
     @GetMapping("/free/ids")
-    public List<Long> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
+    public List<String> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
                                            @RequestParam(defaultValue = "10") Long size) {
         return bookRecordService.findAllFreeBookIds(page, size);
     }
 
     @PostMapping("/")
-    public BookRecordResponseDTO createBookRecord(@RequestBody Long bookId, HttpServletResponse response) {
-        Long bookRecordId = bookRecordService.addBookRecord(bookId);
+    public BookRecordResponseDTO createBookRecord(@RequestBody String isbn, HttpServletResponse response) {
+        Long bookRecordId = bookRecordService.addBookRecord(isbn);
         Optional<BookRecord> bookRecordById = bookRecordService.findBookRecordById(bookRecordId);
         if(bookRecordById.isPresent()) {
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordById.get());
@@ -58,9 +56,9 @@ public class BookRecordController {
         }
     }
 
-    @PutMapping("take/{id}")
-    public BookRecordResponseDTO takeBookRecord(@PathVariable Long id, HttpServletResponse response) {
-        BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.takeBook(id);
+    @PutMapping("take/{isbn}")
+    public BookRecordResponseDTO takeBookRecord(@PathVariable String isbn, HttpServletResponse response) {
+        BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.takeBook(isbn);
         if(bookRecordResponseDTO == null){
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
@@ -68,9 +66,9 @@ public class BookRecordController {
 
     }
 
-    @PutMapping("return/{id}")
-    public BookRecordResponseDTO returnBookRecord(@PathVariable Long id, HttpServletResponse response) {
-        BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.returnBook(id);
+    @PutMapping("return/{isbn}")
+    public BookRecordResponseDTO returnBookRecord(@PathVariable String isbn, HttpServletResponse response) {
+        BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.returnBook(isbn);
         if(bookRecordResponseDTO == null){
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }

@@ -22,7 +22,7 @@ public class BookRecord {
 
     @Column(name = "book_id")
     @NotNull
-    private Long bookId;
+    private String ISBN;
 
     @Column(name = "date_time_take_of_book")
     private LocalDateTime dateTimeTakeOfBook;
@@ -34,7 +34,7 @@ public class BookRecord {
     public int hashCode() {
         final int prime = 31;
         int result = id.hashCode();
-        result = prime * result + bookId.hashCode();
+        result = prime * result + ISBN.hashCode();
         return result;
     }
 
@@ -53,6 +53,6 @@ public class BookRecord {
             return false;
         }
 
-        return bookRecord.getBookId().equals(this.getBookId());
+        return bookRecord.getISBN().equals(this.getISBN());
     }
 }

@@ -36,20 +36,20 @@ public class BookRecordService {
                 .limit(pageSize)
                 .toList();
     }
-    public List<Long> findAllFreeBookIds(Long pageNumber, Long pageSize) {
+    public List<String> findAllFreeBookIds(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
                 .skip((pageNumber - 1) * pageSize)
                 .limit(pageSize)
-                .map(BookRecord::getBookId)
+                .map(BookRecord::getISBN)
                 .toList();
     }
 
 
-    public Long addBookRecord(Long bookId) {
+    public Long addBookRecord(String isbn) {
         BookRecord record = BookRecord.builder()
-                .bookId(bookId)
+                .ISBN(isbn)
                 .build();
         return bookRecordRepository.save(record).getId();
     }
@@ -57,11 +57,11 @@ public class BookRecordService {
     public Optional<BookRecord> findBookRecordById(Long id) {
         Optional<BookRecord> bookRecordById = bookRecordRepository.findById(id);
         return Optional.of(bookRecordById)
-                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find book with id: " + id));
+                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find book record with id: " + id));
     }
 
-    public BookRecordResponseDTO takeBook(Long bookId) {
-        Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
+    public BookRecordResponseDTO takeBook(String isbn) {
+        Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
             if(bookRecord.getDateTimeTakeOfBook() != null) {
@@ -72,11 +72,11 @@ public class BookRecordService {
             bookRecord.setDateTimeReturnOfBook(dateTimeNow.plusDays(30));
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
-        throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
+        throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
     }
 
-    public BookRecordResponseDTO returnBook(Long bookId) {
-        Optional<BookRecord> maybeBookRecord = bookRecordRepository.findById(bookId);
+    public BookRecordResponseDTO returnBook(String isbn) {
+        Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
             if(bookRecord.getDateTimeTakeOfBook() == null) {
@@ -86,6 +86,6 @@ public class BookRecordService {
             bookRecord.setDateTimeTakeOfBook(null);
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
-        throw new BookRecordNotFoundException("Unable to find book with book id:" + bookId);
+        throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
     }
 }
