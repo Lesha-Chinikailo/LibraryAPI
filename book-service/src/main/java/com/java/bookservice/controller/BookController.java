@@ -2,6 +2,9 @@ package com.java.bookservice.controller;
 
 import com.java.bookservice.controller.dto.BookRequestDTO;
 import com.java.bookservice.controller.dto.BookResponseDTO;
+import com.java.bookservice.exception.BookNotFoundException;
+import com.java.bookservice.exception.BookTakenException;
+import com.java.bookservice.exception.ServiceUnavailableException;
 import com.java.bookservice.mapper.BookMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.service.BookService;
@@ -17,7 +20,6 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor()
-//@RequestMapping("/books")
 public class BookController {
 
     private final BookService bookService;
@@ -75,19 +77,38 @@ public class BookController {
     }
 
     @PutMapping("/{isbn}")
-    public BookResponseDTO updateBook(@PathVariable String isbn,
-                                      @RequestBody BookRequestDTO bookRequestDTO) {
-        return bookMapper.bookToResponseDTO(bookService.updateBook(isbn, bookRequestDTO));
+    public ResponseEntity<BookResponseDTO> updateBook(@PathVariable String isbn,
+                                                      @RequestBody BookRequestDTO bookRequestDTO) {
+        Book book;
+        try{
+            book = bookService.updateBook(isbn, bookRequestDTO);
+        }
+        catch (BookNotFoundException | BookTakenException e){
+            return new ResponseEntity<>(new BookResponseDTO(), HttpStatus.NOT_FOUND);
+        }
+        catch (ServiceUnavailableException e){
+            return new ResponseEntity<>(new BookResponseDTO(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+        return new ResponseEntity<>(bookMapper.bookToResponseDTO(book), HttpStatus.OK);
     }
 
     @DeleteMapping("/{isbn}")
     public ResponseEntity<String> deleteBook(@PathVariable String isbn) {
-        boolean isDeleted = bookService.deleteBook(isbn);
+        boolean isDeleted;
+        try{
+            isDeleted = bookService.deleteBook(isbn);
+        }
+        catch (BookNotFoundException | BookTakenException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        }
+        catch (ServiceUnavailableException e){
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
         if(isDeleted){
-            return ResponseEntity.ok("Book with isbn " + isbn + " has been deleted successfully");
+            return ResponseEntity.ok("Book with isbn: " + isbn + " has been deleted successfully");
         }
         else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with isbn   " + isbn);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with isbn: " + isbn);
         }
     }
-}
+ }

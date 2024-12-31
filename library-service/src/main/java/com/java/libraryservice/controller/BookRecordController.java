@@ -1,11 +1,14 @@
 package com.java.libraryservice.controller;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
+import com.java.libraryservice.exception.BookRecordNotFoundException;
 import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.service.BookRecordService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,6 +29,24 @@ public class BookRecordController {
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)
                 .collect(Collectors.toList());
+    }
+
+    @GetMapping("/isTaken/{isbn}")
+    public ResponseEntity<Boolean> getFreeBookRecord(@PathVariable String isbn) {
+        return new ResponseEntity<>(bookRecordService.isTakenBook(isbn), HttpStatus.OK);
+    }
+
+    @GetMapping("/isbn/{isbn}")
+    public ResponseEntity<BookRecordResponseDTO> getBookRecordByISBN(@PathVariable String isbn) {
+        Optional<BookRecord> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn);
+        return bookRecordByISBN
+                .map(bookRecord -> new ResponseEntity<>(
+                bookRecordMapper.bookRecordToResponseDTO(bookRecord),
+                HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(
+                new BookRecordResponseDTO(),
+                HttpStatus.NOT_FOUND));
+
     }
 
     @GetMapping("/")
@@ -63,7 +84,6 @@ public class BookRecordController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
         return bookRecordResponseDTO;
-
     }
 
     @PutMapping("return/{isbn}")
@@ -73,5 +93,16 @@ public class BookRecordController {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         }
         return bookRecordResponseDTO;
+    }
+
+    @DeleteMapping("/{isbn}")
+    public ResponseEntity<String> deleteBookRecord(@PathVariable String isbn) {
+        boolean isDeleted = bookRecordService.deleteBookRecord(isbn);
+        if(isDeleted){
+            return ResponseEntity.ok("Book with isbn: " + isbn + " has been deleted successfully");
+        }
+        else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with isbn: " + isbn);
+        }
     }
 }

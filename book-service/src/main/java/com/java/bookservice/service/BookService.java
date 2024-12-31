@@ -2,16 +2,19 @@ package com.java.bookservice.service;
 
 import com.java.bookservice.controller.dto.BookRequestDTO;
 import com.java.bookservice.exception.BookNotFoundException;
+import com.java.bookservice.exception.BookRecordNotDeleteException;
+import com.java.bookservice.exception.BookTakenException;
+import com.java.bookservice.exception.ServiceUnavailableException;
 import com.java.bookservice.mapper.BookMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.repository.BookRepository;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.ConstraintViolationException;
-import jakarta.validation.Validator;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Transaction;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,6 +29,7 @@ public class BookService {
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate;
     private final Properties configProperties;
+    private final DataSourceTransactionManager transactionManager;
 
     public String createBook(BookRequestDTO dto){
         Book book = bookMapper.RequestDTOToBook(dto);
@@ -54,6 +58,14 @@ public class BookService {
         ResponseEntity<String[]> responseEntity = restTemplate.getForEntity(urlHealthCheck, String[].class);
 
         return responseEntity.getStatusCode().is2xxSuccessful();
+    }
+
+    private boolean isTakenBook(String isbn) {
+        String url = configProperties.getProperty("url.isTakenBook");
+        url += isbn;
+
+        ResponseEntity<Boolean> responseEntity = restTemplate.getForEntity(url, Boolean.class);
+        return Boolean.TRUE.equals(responseEntity.getBody());
     }
 
     public List<Book> getAllBooks(Long pageNumber, Long pageSize){
@@ -92,8 +104,17 @@ public class BookService {
 
     public Book updateBook(String isbn, BookRequestDTO dto){
         if(findBookById(isbn).isEmpty()){
-            return null;
+            throw new BookNotFoundException("Unable to find a book with isbn: " + isbn);
         }
+
+        if(!isServiceAvailable()){
+            throw new ServiceUnavailableException("Sorry, library is not available. Try again later");
+        }
+
+        if(isTakenBook(isbn)){
+            throw new BookTakenException("Sorry, book with isbn: " + isbn + " is taken or not exist");
+        }
+
         Book book = findBookById(isbn).get();
         book.setISBN(dto.getISBN());
         book.setTitle(dto.getTitle());
@@ -103,7 +124,32 @@ public class BookService {
         return bookRepository.save(book);
     }
 
+    @Transactional
     public boolean deleteBook(String isbn){
+        if(findBookById(isbn).isEmpty()){
+            throw new BookNotFoundException("Unable to find a book with isbn: " + isbn);
+        }
+
+        if (!isServiceAvailable()) {
+            throw new ServiceUnavailableException("Sorry, library is not available. Try again later");
+        }
+
+        if (isTakenBook(isbn)) {
+            throw new BookTakenException("Sorry, book with isbn: " + isbn + " is taken");
+        }
+
+        String urlDelete = configProperties.getProperty("url.deleteBookRecord");
+        urlDelete += isbn;
+
+        restTemplate.delete(urlDelete, String.class);
+
+        String urlGet = configProperties.getProperty("url.getBookRecordByISBN");
+
+        var response = restTemplate.getForEntity(urlGet, Object.class);
+        if(response.getStatusCode().is2xxSuccessful()){
+            throw new BookRecordNotDeleteException("Book record do not delete in the library service");
+        }
+
         bookRepository.deleteById(isbn);
         Optional<Book> book = bookRepository.findById(isbn);
         return book.isEmpty();

@@ -60,6 +60,19 @@ public class BookRecordService {
                 .orElseThrow(() -> new BookRecordNotFoundException("Unable to find book record with id: " + id));
     }
 
+    public Optional<BookRecord> findBookRecordByISBN(String isbn) {
+        return bookRecordRepository.findByISBN(isbn);
+    }
+
+    public boolean isTakenBook(String isbn) {
+        Optional<BookRecord> byISBN = bookRecordRepository.findByISBN(isbn);
+        if(byISBN.isPresent()) {
+            BookRecord bookRecord = byISBN.get();
+            return bookRecord.getDateTimeReturnOfBook() != null;
+        }
+        return true;
+    }
+
     public BookRecordResponseDTO takeBook(String isbn) {
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
@@ -87,5 +100,11 @@ public class BookRecordService {
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
         throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
+    }
+
+    public boolean deleteBookRecord(String isbn) {
+        bookRecordRepository.deleteByISBN(isbn);
+        Optional<BookRecord> byISBN = bookRecordRepository.findByISBN(isbn);
+        return byISBN.isEmpty();
     }
 }

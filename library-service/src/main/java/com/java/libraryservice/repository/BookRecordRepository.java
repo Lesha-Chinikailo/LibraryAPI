@@ -9,4 +9,6 @@ public interface BookRecordRepository extends JpaRepository<BookRecord, Long> {
 
     Optional<BookRecord> findByISBN(String ISBN);
 
+    void deleteByISBN(String ISBN);
+
 }
