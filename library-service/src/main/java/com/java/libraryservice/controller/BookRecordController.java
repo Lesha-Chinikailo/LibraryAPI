@@ -52,6 +52,10 @@ public class BookRecordController {
     @GetMapping("/")
     public List<BookRecordResponseDTO> getBookRecords(@RequestParam(defaultValue = "0") Long page,
                                                       @RequestParam(defaultValue = "10") Long size) {
+        if (page < 0 || size < 0)
+        {
+            throw new IllegalArgumentException("Page and size parameters must be non-negative.");
+        }
         return bookRecordService.findAll(page, size)
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)

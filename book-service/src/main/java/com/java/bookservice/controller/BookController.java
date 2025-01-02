@@ -12,6 +12,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.*;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,6 +21,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor()
+@Validated
 public class BookController {
 
     private final BookService bookService;
@@ -63,7 +65,7 @@ public class BookController {
     }
 
     @PostMapping("/create")
-    public BookResponseDTO createBook(@RequestBody @Valid BookRequestDTO bookRequestDTO, HttpServletResponse response) {
+    public BookResponseDTO createBook(@Valid @RequestBody BookRequestDTO bookRequestDTO, HttpServletResponse response) {
         String bookISBN;
         try{
             bookISBN = bookService.createBook(bookRequestDTO);

@@ -4,6 +4,7 @@ import com.java.libraryservice.controller.dto.BookRecordRequestDTO;
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
 import com.java.libraryservice.models.BookRecord;
 import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
 import org.mapstruct.factory.Mappers;
 
 @Mapper(componentModel = "spring")
@@ -13,5 +14,6 @@ public interface BookRecordMapper {
 
     BookRecord RequestDTOToBook(BookRecordRequestDTO dto);
 
+//    @Mapping(source = "isbn", target = "isbn")
     BookRecordResponseDTO bookRecordToResponseDTO(BookRecord bookRecord);
 }

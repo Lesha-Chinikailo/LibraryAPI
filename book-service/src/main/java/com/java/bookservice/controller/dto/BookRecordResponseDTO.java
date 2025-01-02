@@ -1,4 +1,4 @@
-package com.java.libraryservice.controller.dto;
+package com.java.bookservice.controller.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class BookRecordResponseDTO {
 
-    private String ISBN;
+    private Long bookId;
 
     private LocalDateTime dateTimeTakeOfBook;
 

@@ -7,6 +7,7 @@ import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.repository.BookRecordRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -23,7 +24,7 @@ public class BookRecordService {
     public List<BookRecord> findAll(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
-                .skip((pageNumber - 1) * pageSize)
+                .skip((pageNumber) * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList());
     }
@@ -32,7 +33,7 @@ public class BookRecordService {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
-                .skip((pageNumber - 1) * pageSize)
+                .skip((pageNumber) * pageSize)
                 .limit(pageSize)
                 .toList();
     }
@@ -40,7 +41,7 @@ public class BookRecordService {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
-                .skip((pageNumber - 1) * pageSize)
+                .skip((pageNumber) * pageSize)
                 .limit(pageSize)
                 .map(BookRecord::getISBN)
                 .toList();
@@ -102,6 +103,7 @@ public class BookRecordService {
         throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
     }
 
+    @Transactional
     public boolean deleteBookRecord(String isbn) {
         bookRecordRepository.deleteByISBN(isbn);
         Optional<BookRecord> byISBN = bookRecordRepository.findByISBN(isbn);

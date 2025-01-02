@@ -1,5 +1,6 @@
 package com.java.bookservice.service;
 
+import com.java.bookservice.controller.dto.BookRecordResponseDTO;
 import com.java.bookservice.controller.dto.BookRequestDTO;
 import com.java.bookservice.exception.BookNotFoundException;
 import com.java.bookservice.exception.BookRecordNotDeleteException;
@@ -11,25 +12,37 @@ import com.java.bookservice.repository.BookRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Transaction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor()
+//@RequiredArgsConstructor()
 public class BookService {
 
     private final BookRepository bookRepository;
     private final BookMapper bookMapper;
     private final RestTemplate restTemplate;
     private final Properties configProperties;
-    private final DataSourceTransactionManager transactionManager;
+
+    @Autowired
+    public BookService(BookRepository bookRepository, BookMapper bookMapper, RestTemplate restTemplate,
+                       @Qualifier("configProperties") Properties configProperties) {
+        this.bookRepository = bookRepository;
+        this.bookMapper = bookMapper;
+        this.restTemplate = restTemplate;
+        this.configProperties = configProperties;
+    }
 
     public String createBook(BookRequestDTO dto){
         Book book = bookMapper.RequestDTOToBook(dto);
@@ -48,15 +61,14 @@ public class BookService {
         HttpEntity<String> requestEntity = new HttpEntity<>(bookSaved.getISBN(), headers);
 
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
-
         return bookSaved.getISBN();
     }
 
     private boolean isServiceAvailable() {
         String urlHealthCheck = configProperties.getProperty("url.healthcheck");
 
-        ResponseEntity<String[]> responseEntity = restTemplate.getForEntity(urlHealthCheck, String[].class);
-
+        ResponseEntity<Object[]> responseEntity = restTemplate.getForEntity(urlHealthCheck, Object[].class);
+        System.out.println(responseEntity);
         return responseEntity.getStatusCode().is2xxSuccessful();
     }
 
@@ -71,7 +83,7 @@ public class BookService {
     public List<Book> getAllBooks(Long pageNumber, Long pageSize){
         return bookRepository.findAll()
                 .stream()
-                .skip((pageNumber - 1) * pageSize)
+                .skip((pageNumber) * pageSize)
                 .limit(pageSize)
                 .collect(Collectors.toList());
     }
@@ -83,17 +95,20 @@ public class BookService {
 
         String url = configProperties.getProperty("url.getFreeBooks");
 
+        //add size and page in request parameters
+        url += "?page=" + pageNumber + "&size=" + pageSize;
+
         var response = restTemplate.getForEntity(url, String[].class);
         var body = response.getBody();
         List<String> list = body != null
                 ? Arrays.stream(body).toList()
                 : new ArrayList<>();
 
-        return bookRepository.findAllById(list)
-                .stream()
-                .skip((pageNumber - 1) * pageSize)
-                .limit(pageSize)
-                .collect(Collectors.toList());
+        return bookRepository.findAllById(list);
+//                .stream()
+//                .skip((pageNumber - 1) * pageSize)
+//                .limit(pageSize)
+//                .collect(Collectors.toList());
     }
 
     public Optional<Book> findBookById(String isbn){
@@ -124,7 +139,7 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-    @Transactional
+//    @Transactional
     public boolean deleteBook(String isbn){
         if(findBookById(isbn).isEmpty()){
             throw new BookNotFoundException("Unable to find a book with isbn: " + isbn);
@@ -144,11 +159,18 @@ public class BookService {
         restTemplate.delete(urlDelete, String.class);
 
         String urlGet = configProperties.getProperty("url.getBookRecordByISBN");
-
-        var response = restTemplate.getForEntity(urlGet, Object.class);
-        if(response.getStatusCode().is2xxSuccessful()){
-            throw new BookRecordNotDeleteException("Book record do not delete in the library service");
+        urlGet += isbn;
+        try{
+            var response = restTemplate.getForEntity(urlGet, BookRecordResponseDTO.class);
+            if(response.getStatusCode().is2xxSuccessful()){
+                throw new BookRecordNotDeleteException("Book record do not delete in the library service");
+            }
         }
+        catch (HttpClientErrorException e){
+            if(e.getStatusCode() != HttpStatus.NOT_FOUND)
+                e.printStackTrace();
+        }
+
 
         bookRepository.deleteById(isbn);
         Optional<Book> book = bookRepository.findById(isbn);
