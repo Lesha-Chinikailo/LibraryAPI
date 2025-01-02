@@ -18,6 +18,7 @@ services:
       retries: 5
     volumes:
       - postgres:/data/postgres
+      - init.sql:/docker-entrypoint-initdb.d/init.sql
     depends_on:
       - config-service
     restart: unless-stopped
@@ -117,6 +118,7 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_bookLibrary:5432/book_library
       SPRING_DATASOURCE_USERNAME: postgresUsername
       SPRING_DATASOURCE_PASSWORD: postgresPassword
+#      SPRING_JPA_HIBERNATE_DDL_AUTO: create
     depends_on:
       config-service:
         condition: service_healthy
