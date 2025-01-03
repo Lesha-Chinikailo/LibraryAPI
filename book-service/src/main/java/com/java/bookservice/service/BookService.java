@@ -48,7 +48,7 @@ public class BookService {
         Book book = bookMapper.RequestDTOToBook(dto);
 
         if(!isServiceAvailable()){
-            throw new RuntimeException("Sorry, library is not available. Try again later");
+            throw new ServiceUnavailableException("Sorry, library is not available. Try again later");
         }
 
         Book bookSaved = bookRepository.save(book);
@@ -90,7 +90,7 @@ public class BookService {
 
     public List<Book> getAllFreeBook(Long pageNumber, Long pageSize){
         if(!isServiceAvailable()){
-            throw new RuntimeException("Sorry, library is not available. Try again later");
+            throw new ServiceUnavailableException("Sorry, library is not available. Try again later");
         }
 
         String url = configProperties.getProperty("url.getFreeBooks");
@@ -112,9 +112,7 @@ public class BookService {
     }
 
     public Optional<Book> findBookById(String isbn){
-        Optional<Book> byId = bookRepository.findById(isbn);
-        return Optional.ofNullable(byId
-                .orElseThrow(() -> new BookNotFoundException("Unable to find book with isbn: " + isbn)));
+        return bookRepository.findById(isbn);
     }
 
     public Book updateBook(String isbn, BookRequestDTO dto){

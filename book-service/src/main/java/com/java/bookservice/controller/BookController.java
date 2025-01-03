@@ -28,21 +28,22 @@ public class BookController {
     private final BookMapper bookMapper;
 
     @GetMapping("/{isbn}")
-    public BookResponseDTO getBookById(@PathVariable String isbn) {
+    public ResponseEntity<BookResponseDTO> getBookById(@PathVariable String isbn) {
         Optional<Book> maybeBook = bookService.findBookById(isbn);
-        if (maybeBook.isPresent()) {
-            return bookMapper.bookToResponseDTO(maybeBook.get());
-        }
-        return new ResponseEntity<BookResponseDTO>(HttpStatus.NOT_FOUND).getBody();
+        return maybeBook
+                .map(book -> new ResponseEntity<>(bookMapper.bookToResponseDTO(book), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/")
-    public List<BookResponseDTO> getAllBook(@RequestParam(defaultValue = "0") Long page,
+    public ResponseEntity<List<BookResponseDTO>> getAllBook(@RequestParam(defaultValue = "0") Long page,
                                             @RequestParam(defaultValue = "10") Long size) {
-        return bookService.getAllBooks(page, size)
+        return new ResponseEntity(
+                bookService.getAllBooks(page, size)
                 .stream()
                 .map(bookMapper::bookToResponseDTO)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                HttpStatus.OK);
     }
 
     @GetMapping("/freeBooks")
@@ -52,8 +53,8 @@ public class BookController {
         try{
             allFreeBook = bookService.getAllFreeBook(page, size);
         }
-        catch (RuntimeException e) {
-            return new ResponseEntity<>(new ArrayList<>(), HttpStatus.SERVICE_UNAVAILABLE);
+        catch (ServiceUnavailableException e) {
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
         }
 
         return new ResponseEntity<>(
@@ -65,17 +66,15 @@ public class BookController {
     }
 
     @PostMapping("/create")
-    public BookResponseDTO createBook(@Valid @RequestBody BookRequestDTO bookRequestDTO, HttpServletResponse response) {
+    public ResponseEntity<BookResponseDTO> createBook(@Valid @RequestBody BookRequestDTO bookRequestDTO) {
         String bookISBN;
         try{
             bookISBN = bookService.createBook(bookRequestDTO);
         }
-        catch (RuntimeException e){
-            response.setStatus(HttpServletResponse.SC_SERVICE_UNAVAILABLE);
-            return new BookResponseDTO();
+        catch (ServiceUnavailableException e) {
+            return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
         }
-
-        return bookMapper.bookToResponseDTO(bookService.findBookById(bookISBN).get());
+        return new ResponseEntity<>(bookMapper.bookToResponseDTO(bookService.findBookById(bookISBN).get()), HttpStatus.CREATED);
     }
 
     @PutMapping("/{isbn}")
@@ -110,7 +109,7 @@ public class BookController {
             return ResponseEntity.ok("Book with isbn: " + isbn + " has been deleted successfully");
         }
         else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with isbn: " + isbn);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to delete book with isbn: " + isbn);
         }
     }
  }
