@@ -1,11 +1,9 @@
 package com.java.libraryservice.controller;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
-import com.java.libraryservice.exception.BookRecordNotFoundException;
 import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.service.BookRecordService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,16 +21,17 @@ public class BookRecordController {
     private final BookRecordMapper bookRecordMapper;
 
     @GetMapping("/free")
-    public List<BookRecordResponseDTO> getFreeBookRecords(@RequestParam(defaultValue = "0") Long page,
+    public ResponseEntity<List<BookRecordResponseDTO>> getFreeBookRecords(@RequestParam(defaultValue = "0") Long page,
                                                           @RequestParam(defaultValue = "10") Long size) {
-        return bookRecordService.findAllFreeBook(page, size)
+        return new ResponseEntity<>(bookRecordService.findAllFreeBook(page, size)
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList())
+                , HttpStatus.OK);
     }
 
     @GetMapping("/isTaken/{isbn}")
-    public ResponseEntity<Boolean> getFreeBookRecord(@PathVariable String isbn) {
+    public ResponseEntity<Boolean> isTakenBookById(@PathVariable String isbn) {
         return new ResponseEntity<>(bookRecordService.isTakenBook(isbn), HttpStatus.OK);
     }
 
@@ -50,53 +49,53 @@ public class BookRecordController {
     }
 
     @GetMapping("/")
-    public List<BookRecordResponseDTO> getBookRecords(@RequestParam(defaultValue = "0") Long page,
-                                                      @RequestParam(defaultValue = "10") Long size) {
-        if (page < 0 || size < 0)
-        {
-            throw new IllegalArgumentException("Page and size parameters must be non-negative.");
+    public ResponseEntity<List<BookRecordResponseDTO>> getBookRecords(@RequestParam(defaultValue = "0") Long page,
+                                                                      @RequestParam(defaultValue = "10") Long size) {
+        if (page < 0 || size < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return bookRecordService.findAll(page, size)
+        return new ResponseEntity<>(bookRecordService.findAll(page, size)
                 .stream()
                 .map(bookRecordMapper::bookRecordToResponseDTO)
-                .collect(Collectors.toList());
+                .collect(Collectors.toList()),
+                HttpStatus.OK);
     }
 
     @GetMapping("/free/ids")
-    public List<String> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
+    public ResponseEntity<List<String>> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
                                            @RequestParam(defaultValue = "10") Long size) {
-        return bookRecordService.findAllFreeBookIds(page, size);
+
+        if (page < 0 || size < 0) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>(bookRecordService.findAllFreeBookIds(page, size), HttpStatus.OK);
     }
 
     @PostMapping("/")
-    public BookRecordResponseDTO createBookRecord(@RequestBody String isbn, HttpServletResponse response) {
+    public ResponseEntity<BookRecordResponseDTO> createBookRecord(@RequestBody String isbn) {
         Long bookRecordId = bookRecordService.addBookRecord(isbn);
         Optional<BookRecord> bookRecordById = bookRecordService.findBookRecordById(bookRecordId);
-        if(bookRecordById.isPresent()) {
-            return bookRecordMapper.bookRecordToResponseDTO(bookRecordById.get());
-        }
-        else {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            return new BookRecordResponseDTO();
-        }
+        return bookRecordById
+                .map(bookRecord -> new ResponseEntity<>(bookRecordMapper.bookRecordToResponseDTO(bookRecord), HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @PutMapping("take/{isbn}")
-    public BookRecordResponseDTO takeBookRecord(@PathVariable String isbn, HttpServletResponse response) {
+    public ResponseEntity<BookRecordResponseDTO> takeBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.takeBook(isbn);
         if(bookRecordResponseDTO == null){
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return bookRecordResponseDTO;
+        return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
     }
 
     @PutMapping("return/{isbn}")
-    public BookRecordResponseDTO returnBookRecord(@PathVariable String isbn, HttpServletResponse response) {
+    public ResponseEntity<BookRecordResponseDTO> returnBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.returnBook(isbn);
         if(bookRecordResponseDTO == null){
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        return bookRecordResponseDTO;
+        return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/{isbn}")
@@ -106,7 +105,7 @@ public class BookRecordController {
             return ResponseEntity.ok("Book with isbn: " + isbn + " has been deleted successfully");
         }
         else {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Failed to delete book with isbn: " + isbn);
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to delete book with isbn: " + isbn);
         }
     }
 }

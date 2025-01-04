@@ -75,18 +75,18 @@ public class BookRecordService {
     }
 
     public BookRecordResponseDTO takeBook(String isbn) {
+        if(isTakenBook(isbn)) {
+            return null;
+        }
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
-            if(bookRecord.getDateTimeTakeOfBook() != null) {
-                return null;
-            }
             LocalDateTime dateTimeNow = LocalDateTime.now();
             bookRecord.setDateTimeTakeOfBook(dateTimeNow);
             bookRecord.setDateTimeReturnOfBook(dateTimeNow.plusDays(30));
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
-        throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
+        return null;
     }
 
     public BookRecordResponseDTO returnBook(String isbn) {
