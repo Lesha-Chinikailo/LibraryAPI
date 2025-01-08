@@ -3,7 +3,7 @@ spring:
     database: POSTGRESQL
     properties.hibernate.temp.use_jdbc_metadata_defaults: false
     hibernate:
-      ddl-auto: create
+      ddl-auto: update
     properties:
   datasource:
     platform: postgres
@@ -11,6 +11,8 @@ spring:
     username: postgresUsername
     password: postgresPassword
     driver-class-name: org.postgresql.Driver
+  liquibase:
+    change-log: classpath:/db/changelog/main-changelog.xml
 
 server:
   servlet:

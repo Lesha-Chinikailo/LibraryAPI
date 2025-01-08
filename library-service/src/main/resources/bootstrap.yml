@@ -9,6 +9,9 @@ spring:
       fail-fast: true
       password: admin
       username: user
+  liquibase:
+    change-log: classpath:/db/changelog/main-changelog.xml
+
 
 logging:
   level:

@@ -14,11 +14,6 @@ import lombok.*;
 @Table(name = "book")
 public class Book {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY)
-//    @Column(name = "id")
-//    private Long id;
-
     @Id
     @NotNull
     @Column(name = "isbn")
