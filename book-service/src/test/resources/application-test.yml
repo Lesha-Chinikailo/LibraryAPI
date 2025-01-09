@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:tc:postgresql:17-alpine:///testdb
+    username: test
+    password: test
+  cloud:
+    config:
+      enabled: false
+    fail-fast: false
+    discovery:
+      enabled: false
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
