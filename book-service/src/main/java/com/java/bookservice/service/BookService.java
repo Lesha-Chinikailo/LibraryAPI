@@ -27,7 +27,6 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-//@RequiredArgsConstructor()
 public class BookService {
 
     private final BookRepository bookRepository;
@@ -68,7 +67,6 @@ public class BookService {
         String urlHealthCheck = configProperties.getProperty("url.healthcheck");
 
         ResponseEntity<Object[]> responseEntity = restTemplate.getForEntity(urlHealthCheck, Object[].class);
-        System.out.println(responseEntity);
         return responseEntity.getStatusCode().is2xxSuccessful();
     }
 
@@ -105,10 +103,6 @@ public class BookService {
                 : new ArrayList<>();
 
         return bookRepository.findAllById(list);
-//                .stream()
-//                .skip((pageNumber - 1) * pageSize)
-//                .limit(pageSize)
-//                .collect(Collectors.toList());
     }
 
     public Optional<Book> findBookById(String isbn){
@@ -129,7 +123,6 @@ public class BookService {
         }
 
         Book book = findBookById(isbn).get();
-        book.setISBN(dto.getISBN());
         book.setTitle(dto.getTitle());
         book.setGenre(dto.getGenre());
         book.setDescription(dto.getDescription());

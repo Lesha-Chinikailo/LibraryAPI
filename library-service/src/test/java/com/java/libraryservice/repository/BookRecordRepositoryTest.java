@@ -39,6 +39,7 @@ class BookRecordRepositoryTest {
     private final String isbn_2 = "2222222222222";
     private final Long id_1 = 1L;
     private final Long id_2 = 2L;
+    private String resetSequenceId = "ALTER SEQUENCE book_record_id_seq RESTART WITH 1";
 
     @Container
     static PostgreSQLContainer<?> postgreSQLContainer = new PostgreSQLContainer<>("postgres:17-alpine");
@@ -57,18 +58,16 @@ class BookRecordRepositoryTest {
     @BeforeEach
     void init() {
         bookRecordRepository.deleteAll();
-        jdbcTemplate.execute("ALTER SEQUENCE book_record_id_seq RESTART WITH 1");
+        jdbcTemplate.execute(resetSequenceId);
         bookRecordRepository.deleteAll();
 
         List<BookRecord> bookRecords = List.of(
                 BookRecord.builder()
-//                        .id(id_1)
                         .ISBN(isbn_1)
                         .dateTimeTakeOfBook(null)
                         .dateTimeReturnOfBook(null)
                         .build(),
                 BookRecord.builder()
-//                        .id(id_2)
                         .ISBN(isbn_2)
                         .dateTimeTakeOfBook(null)
                         .dateTimeReturnOfBook(null)
