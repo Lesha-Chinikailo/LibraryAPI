@@ -17,7 +17,7 @@ public class BookRecord {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+//    @Column(name = "id")
     private Long id;
 
     @Column(name = "book_id")

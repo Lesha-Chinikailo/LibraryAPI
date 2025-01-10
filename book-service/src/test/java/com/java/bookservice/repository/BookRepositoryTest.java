@@ -113,6 +113,7 @@ class BookRepositoryTest {
         assertThat(allBooks.size()).isEqualTo(0);
     }
 
+    @Test
     public void existsBookById(){
         boolean exists = bookRepository.existsById(isbn_1);
         assertTrue(exists);
