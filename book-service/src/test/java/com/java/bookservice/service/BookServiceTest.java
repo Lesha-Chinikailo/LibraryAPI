@@ -35,6 +35,7 @@ class BookServiceTest {
     private BookService bookService;
     private final String isbn_1 = "1111111111111";
     private final String isbn_2 = "2222222222222";
+    private final String isbn_3 = "3333333333333";
 
     @Autowired
     private Properties configProperties;
@@ -83,9 +84,8 @@ class BookServiceTest {
     void createBook() {
         preparationBeforeCreateMethod();
 
-        String isbn = "3333333333333";
         BookRequestDTO bookRequestDTO = BookRequestDTO.builder()
-                .ISBN(isbn)
+                .ISBN(isbn_3)
                 .title("Book 3")
                 .genre("genre 3")
                 .description("description 3")
@@ -95,9 +95,9 @@ class BookServiceTest {
         bookService.createBook(bookRequestDTO);
         int sizeAfterSave = bookService.getAllBooks(0L, Long.MAX_VALUE).size();
 
-        Optional<Book> byId = bookService.findBookById(isbn);
+        Optional<Book> byId = bookService.findBookById(isbn_3);
         assertTrue(byId.isPresent());
-        assertThat(byId.get().getISBN()).isEqualTo(isbn);
+        assertThat(byId.get().getISBN()).isEqualTo(isbn_3);
         assertThat(sizeAfterSave).isEqualTo(sizeBeforeSave + 1);
     }
 
@@ -119,9 +119,8 @@ class BookServiceTest {
     void updateBook() {
         preparationBeforeUpdateMethod();
 
-        String isbn = "3333333333333";
         BookRequestDTO bookRequestDTO = BookRequestDTO.builder()
-                .ISBN(isbn)
+                .ISBN(isbn_3)
                 .title("Book 3")
                 .genre("genre 3")
                 .description("description 3")

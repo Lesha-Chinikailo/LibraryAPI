@@ -2,8 +2,6 @@ package com.java.libraryservice.repository;
 
 import com.java.libraryservice.LibraryServiceApplication;
 import com.java.libraryservice.models.BookRecord;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,13 +11,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import jakarta.persistence.EntityManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -28,9 +24,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = LibraryServiceApplication.class)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
 class BookRecordRepositoryTest {
 
     @Autowired
@@ -74,7 +68,6 @@ class BookRecordRepositoryTest {
                         .build()
         );
         bookRecordRepository.saveAll(bookRecords);
-        System.out.println("after save:" + bookRecordRepository.findAll().stream().map(BookRecord::getId).toList());
     }
 
     @Test

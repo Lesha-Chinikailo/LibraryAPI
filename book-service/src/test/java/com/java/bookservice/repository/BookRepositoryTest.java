@@ -20,9 +20,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @Testcontainers
-@ExtendWith(SpringExtension.class)
-@SpringBootTest(classes = BookServiceApplication.class)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@SpringBootTest
 class BookRepositoryTest {
 
     @Autowired
