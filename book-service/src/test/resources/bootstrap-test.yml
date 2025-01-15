@@ -6,7 +6,3 @@ spring:
       enabled: false
     config:
       enabled: false
-#      uri: http://localhost:8001
-#      fail-fast: true
-#      password: admin
-#      username: user
