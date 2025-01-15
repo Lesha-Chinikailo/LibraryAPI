@@ -4,7 +4,7 @@ import com.java.authservice.controller.dto.UserRequestDTO;
 import com.java.authservice.controller.dto.UserResponseDTO;
 import com.java.authservice.entity.User;
 import com.java.authservice.mapper.UserMapper;
-import com.java.authservice.repository.UserCredentialRepository;
+import com.java.authservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class AuthService {
     @Autowired
-    private UserCredentialRepository userCredentialRepository;
+    private UserRepository userRepository;
     @Autowired
     private UserMapper userMapper;
     @Autowired
@@ -24,7 +24,7 @@ public class AuthService {
     public UserResponseDTO saveUser(UserRequestDTO dto) {
         User user = userMapper.requestDTOToUser(dto);
         user.setPassword(passwordEncoder.encode(user.getPassword()));
-        User savedUser = userCredentialRepository.save(user);
+        User savedUser = userRepository.save(user);
         return userMapper.userToResponseDTO(savedUser);
     }
 

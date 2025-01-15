@@ -3,14 +3,12 @@ package com.java.authservice.controller;
 import com.java.authservice.controller.dto.UserRequestDTO;
 import com.java.authservice.controller.dto.UserResponseDTO;
 import com.java.authservice.entity.User;
-import com.java.authservice.mapper.UserMapper;
 import com.java.authservice.service.AuthService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,22 +38,15 @@ class AuthControllerTest {
     private String token = "123456789";
     private UserResponseDTO fullFieldUserResponseDTO;
     private UserRequestDTO fullFieldUserRequestDTO;
-    private User fullFieldUser;
 
     @BeforeEach
     public void prepare() {
-//        MockitoAnnotations.openMocks(this);
         fullFieldUserResponseDTO = UserResponseDTO.builder()
                 .id(1L)
                 .username("username 1")
                 .password("password 1")
                 .build();
         fullFieldUserRequestDTO = UserRequestDTO.builder()
-                .username("username 1")
-                .password("password 1")
-                .build();
-        fullFieldUser = User.builder()
-                .id(1L)
                 .username("username 1")
                 .password("password 1")
                 .build();
@@ -99,7 +90,6 @@ class AuthControllerTest {
 
     @Test
     public void validateToken_success(){
-//        doThrow(Exception.class).when(authService).validateToken(token);
         doNothing().when(authService).validateToken(token);
 
         ResponseEntity<?> responseEntity = authController.validateToken(token);
