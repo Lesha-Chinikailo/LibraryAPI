@@ -45,7 +45,12 @@ public class AuthController {
 
     @GetMapping("/validate")
     public ResponseEntity<?> validateToken(@RequestHeader(HttpHeaders.AUTHORIZATION) String token){
-        authService.validateToken(token);
+        try{
+            authService.validateToken(token);
+        }
+        catch (Exception e){
+            return new ResponseEntity<>("invalid access", HttpStatus.UNAUTHORIZED);
+        }
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }
