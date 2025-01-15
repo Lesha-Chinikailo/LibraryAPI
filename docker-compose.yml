@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   postgres:
-    image: postgres:17 # 13
+    image: postgres:17
 
     container_name: postgres
     environment:
@@ -107,6 +107,28 @@ services:
     networks:
       my_network:
 
+  auth-service:
+    container_name: auth-service
+    restart: on-failure
+    build: auth-service
+    ports:
+      - 8083:8083
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/auth_service_database
+      SPRING_DATASOURCE_USERNAME: postgresUsername
+      SPRING_DATASOURCE_PASSWORD: postgresPassword
+    depends_on:
+      postgres:
+        condition: service_healthy
+      config-service:
+        condition: service_healthy
+      registry:
+        condition: service_healthy
+      gateway:
+        condition: service_started
+    networks:
+      my_network:
+
   library-service:
     container_name: library-service
     restart: on-failure
@@ -117,7 +139,6 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_bookLibrary:5432/book_library
       SPRING_DATASOURCE_USERNAME: postgresUsername
       SPRING_DATASOURCE_PASSWORD: postgresPassword
-#      SPRING_JPA_HIBERNATE_DDL_AUTO: create
     depends_on:
       config-service:
         condition: service_healthy

@@ -1,0 +1,20 @@
+spring:
+  jpa:
+    database: POSTGRESQL
+    properties.hibernate.temp.use_jdbc_metadata_defaults: false
+    hibernate:
+      ddl-auto: create
+    properties:
+  datasource:
+    platform: postgres
+    url: jdbc:postgresql://postgres:5432/auth_service_database
+    username: postgresUsername
+    password: postgresPassword
+    driver-class-name: org.postgresql.Driver
+#  liquibase:
+#    change-log: classpath:/db/changelog/main-changelog.xml
+
+server:
+  servlet:
+    context-path: /auth
+  port: 8083

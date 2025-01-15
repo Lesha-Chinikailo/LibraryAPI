@@ -9,16 +9,12 @@ import com.java.bookservice.exception.ServiceUnavailableException;
 import com.java.bookservice.mapper.BookMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.repository.BookRepository;
-import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
-import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -93,7 +89,6 @@ public class BookService {
 
         String url = configProperties.getProperty("url.getFreeBooks");
 
-        //add size and page in request parameters
         url += "?page=" + pageNumber + "&size=" + pageSize;
 
         var response = restTemplate.getForEntity(url, String[].class);
@@ -130,7 +125,6 @@ public class BookService {
         return bookRepository.save(book);
     }
 
-//    @Transactional
     public boolean deleteBook(String isbn){
         if(findBookById(isbn).isEmpty()){
             throw new BookNotFoundException("Unable to find a book with isbn: " + isbn);

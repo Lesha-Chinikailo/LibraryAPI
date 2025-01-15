@@ -5,10 +5,15 @@ import com.java.libraryservice.exception.BookRecordNotFoundException;
 import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.repository.BookRecordRepository;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +25,18 @@ public class BookRecordService {
 
     private final BookRecordRepository bookRecordRepository;
     private final BookRecordMapper bookRecordMapper;
+    private final JdbcTemplate jdbcTemplate;
+    private String resetSequenceId = "ALTER SEQUENCE book_record_id_seq RESTART WITH %d";
+
+    @PostConstruct
+    public void init() {
+        try {
+            List<String> lines = Files.readAllLines(Paths.get(ClassLoader.getSystemResource("classpath:/db/data/book-record-insert-data.csv").toURI()));
+            jdbcTemplate.execute(resetSequenceId.formatted(lines.size()));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public List<BookRecord> findAll(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()

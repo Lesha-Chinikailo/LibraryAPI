@@ -10,38 +10,17 @@ ribbon:
   ReadTimeout: 20000
   ConnectTimeout: 20000
 
-#zuul:
-#  ignoredServices: '*'
-#  host:
-#    connect-timeout-millis: 20000
-#    socket-timeout-millis: 20000
-#  routes:
-#    book-service:
-#      path: /books/**
-#      serviceId: book-service
-#      stripPrefix: true
-##      url: http://localhost:8081
-#
-#    LibraryService:
-#      path: /records/**
-#      serviceId: LibraryService
-#      stripPrefix: false
 
 spring:
   cloud:
     gateway:
       routes:
         - id: book-service
-          uri: http://book-service:8081 #http://localhost:8081
+          uri: http://book-service:8081
           predicates:
-#            - Host=localhost:8081
             - Path=/books/**
-#            - Method=GET,POST
           filters:
-            - RemoveRequestHeader=Cookie
-#          filter:
-##            - PrefixPath=/
-#            - AddResponseHeader=X-Powered-By, Gateway Service
+            - AuthenticationFilter
 
         - id: LibraryService
           uri: http://LibraryService:8082
@@ -49,6 +28,13 @@ spring:
             - Path=/records/**
           filter:
             - StripPrefix=1
+          filters:
+            - AuthenticationFilter
+
+        - id: auth-service
+          uri: http://auth-service:8083
+          predicates:
+            - Path=/auth/**
 
 management:
   endpoints:
@@ -58,17 +44,3 @@ management:
 
 server:
   port: 8989
-
-#      globalcors:
-#        cors-configurations:
-#          "[/**]":
-#            allowedOriginPatterns: "*"
-#            allowedMethods:
-#              - GET
-#              - POST
-#              - PATCH
-#              - PUT
-#              - DELETE
-#      default-filters:
-#        - StripPrefix=1
-#        - AddRequestHeader=proxied, true

@@ -1,6 +1,6 @@
 package com.java.authservice.config;
 
-import com.java.authservice.entity.UserCredential;
+import com.java.authservice.entity.User;
 import com.java.authservice.repository.UserCredentialRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -18,7 +18,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        Optional<UserCredential> user = userCredentialRepository.findByUsername(username);
+        Optional<User> user = userCredentialRepository.findByUsername(username);
         return user.map(CustomUserDetails::new).orElseThrow(() -> new UsernameNotFoundException("username not found with name: " + username));
     }
 }

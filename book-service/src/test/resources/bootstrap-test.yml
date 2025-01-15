@@ -5,7 +5,8 @@ spring:
     compatibility-verifier:
       enabled: false
     config:
-      uri: http://localhost:8001
-      fail-fast: true
-      password: admin
-      username: user
+      enabled: false
+#      uri: http://localhost:8001
+#      fail-fast: true
+#      password: admin
+#      username: user
