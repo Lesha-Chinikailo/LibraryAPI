@@ -2,6 +2,7 @@ package com.java.bookservice.service;
 
 import com.java.bookservice.controller.dto.BookRequestDTO;
 import com.java.bookservice.controller.dto.BookResponseDTO;
+import com.java.bookservice.exception.BookNotFoundException;
 import com.java.bookservice.models.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -145,15 +146,17 @@ class BookServiceTest {
         preparationBeforeDeleteMethod(isbn_1);
         bookService.deleteBook(isbn_1);
 
-        Optional<BookResponseDTO> byId = bookService.findBookById(isbn_1);
-        assertTrue(byId.isEmpty());
+        assertThrows(BookNotFoundException.class, () -> {
+            Optional<BookResponseDTO> byId = bookService.findBookById(isbn_1);
+            assertTrue(byId.isEmpty());
+        });
     }
 
 
     private void preparationMockServiceResponseInitMethod(List<String> isbns){
         mockServer = MockRestServiceServer.createServer(restTemplate);
-        for (int i = 0; i < isbns.size(); i++) {
-            prepareMockServerResponseDeleteBook(isbns.get(i));
+        for (String isbn : isbns) {
+            prepareMockServerResponseDeleteBook(isbn);
         }
 
         prepareMockServerResponseCreateBook();

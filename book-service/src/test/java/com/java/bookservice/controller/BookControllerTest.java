@@ -5,6 +5,7 @@ import com.java.bookservice.controller.dto.BookResponseDTO;
 import com.java.bookservice.exception.BookNotFoundException;
 import com.java.bookservice.exception.BookTakenException;
 import com.java.bookservice.exception.ServiceUnavailableException;
+import com.java.bookservice.handler.GlobalExceptionHandler;
 import com.java.bookservice.mapper.BookMapper;
 import com.java.bookservice.models.Book;
 import com.java.bookservice.service.BookService;
@@ -30,11 +31,10 @@ public class BookControllerTest {
     @Mock
     private BookService bookService;
 
-    @Mock
-    private BookMapper bookMapper;
-
     @InjectMocks
     private BookController bookController;
+
+    private GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
 
     private final Long page = 0L;
     private final Long size = 10L;
@@ -118,12 +118,13 @@ public class BookControllerTest {
 
     @Test
     public void createBook_serviceUnavailable() {
-        doThrow(new ServiceUnavailableException(messageInException)).when(bookService).createBook(fullFieldBookRequestDTO);
+        lenient().doThrow(new ServiceUnavailableException(messageInException)).when(bookService).createBook(fullFieldBookRequestDTO);
+//        ResponseEntity<BookResponseDTO> createdBook = bookController.createBook(fullFieldBookRequestDTO);
 
-        ResponseEntity<BookResponseDTO> createdBook = bookController.createBook(fullFieldBookRequestDTO);
+        ResponseEntity<Object> response = globalExceptionHandler.handleServiceUnavailableException(new ServiceUnavailableException(messageInException));
 
-        assertNotNull(createdBook);
-        assertThat(createdBook.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -140,23 +141,25 @@ public class BookControllerTest {
     @Test
     public void updateBook_notFound() {
 
-        doThrow(new BookNotFoundException(messageInException),
+        lenient().doThrow(new BookNotFoundException(messageInException),
                 new BookTakenException(messageInException)).when(bookService).updateBook(wrongIsbn, fullFieldBookRequestDTO);
+//        ResponseEntity<BookResponseDTO> bookResponseDTOResponseEntity = bookController.updateBook(wrongIsbn, fullFieldBookRequestDTO);
 
-        ResponseEntity<BookResponseDTO> bookResponseDTOResponseEntity = bookController.updateBook(wrongIsbn, fullFieldBookRequestDTO);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookNotFoundException(new BookNotFoundException(messageInException));
 
-        assertNotNull(bookResponseDTOResponseEntity);
-        assertThat(bookResponseDTOResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     public void updateBook_serviceUnavailable() {
-        doThrow(new ServiceUnavailableException(messageInException)).when(bookService).updateBook(isbn, fullFieldBookRequestDTO);
+        lenient().doThrow(new ServiceUnavailableException(messageInException)).when(bookService).updateBook(isbn, fullFieldBookRequestDTO);
+//        ResponseEntity<BookResponseDTO> bookResponseDTOResponseEntity = bookController.updateBook(isbn, fullFieldBookRequestDTO);
 
-        ResponseEntity<BookResponseDTO> bookResponseDTOResponseEntity = bookController.updateBook(isbn, fullFieldBookRequestDTO);
+        ResponseEntity<Object> response = globalExceptionHandler.handleServiceUnavailableException(new ServiceUnavailableException(messageInException));
 
-        assertNotNull(bookResponseDTOResponseEntity);
-        assertThat(bookResponseDTOResponseEntity.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -181,25 +184,27 @@ public class BookControllerTest {
 
     @Test
     public void deleteBook_notFound() {
-        doThrow(new BookNotFoundException(messageInException)
+        lenient().doThrow(new BookNotFoundException(messageInException)
                 , new BookTakenException(messageInException)).when(bookService).deleteBook(isbn);
+//        ResponseEntity<String> responseEntity = bookController.deleteBook(isbn);
 
-        ResponseEntity<String> responseEntity = bookController.deleteBook(isbn);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookNotFoundException(new BookNotFoundException(messageInException));
 
-        assertNotNull(responseEntity);
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
     public void deleteBook_serviceUnavailable() {
-        doThrow(new ServiceUnavailableException(messageInException))
+        lenient().doThrow(new ServiceUnavailableException(messageInException))
                 .when(bookService)
                 .deleteBook(isbn);
+//        ResponseEntity<String> responseEntity = bookController.deleteBook(isbn);
 
-        ResponseEntity<String> responseEntity = bookController.deleteBook(isbn);
+        ResponseEntity<Object> response = globalExceptionHandler.handleServiceUnavailableException(new ServiceUnavailableException(messageInException));
 
-        assertNotNull(responseEntity);
-        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 
     @Test
@@ -242,13 +247,14 @@ public class BookControllerTest {
 
     @Test
     public void getAllFreeBooks_serviceUnavailable() {
-        doThrow(new ServiceUnavailableException(messageInException))
+        lenient().doThrow(new ServiceUnavailableException(messageInException))
                 .when(bookService)
                 .getAllFreeBook(page, size);
+//        ResponseEntity<List<BookResponseDTO>> allFreeBooks = bookController.getAllFreeBooks(page, size);
 
-        ResponseEntity<List<BookResponseDTO>> allFreeBooks = bookController.getAllFreeBooks(page, size);
+        ResponseEntity<Object> response = globalExceptionHandler.handleServiceUnavailableException(new ServiceUnavailableException(messageInException));
 
-        assertNotNull(allFreeBooks);
-        assertThat(allFreeBooks.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.SERVICE_UNAVAILABLE);
     }
 }

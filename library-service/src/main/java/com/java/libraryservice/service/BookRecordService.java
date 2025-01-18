@@ -2,6 +2,8 @@ package com.java.libraryservice.service;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
 import com.java.libraryservice.exception.BookRecordNotFoundException;
+import com.java.libraryservice.exception.BookReturnedException;
+import com.java.libraryservice.exception.BookTakenException;
 import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.repository.BookRecordRepository;
@@ -74,14 +76,16 @@ public class BookRecordService {
         return bookRecordRepository.save(record).getId();
     }
 
-    public Optional<BookRecordResponseDTO> findBookRecordById(Long id) {
+    public BookRecordResponseDTO findBookRecordById(Long id) {
         Optional<BookRecord> bookRecordById = bookRecordRepository.findById(id);
-        return bookRecordById.map(bookRecordMapper::bookRecordToResponseDTO);
+        return bookRecordById.map(bookRecordMapper::bookRecordToResponseDTO)
+                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find a book record with id:" + id));
     }
 
-    public Optional<BookRecordResponseDTO> findBookRecordByISBN(String isbn) {
+    public BookRecordResponseDTO findBookRecordByISBN(String isbn) {
         return bookRecordRepository.findByISBN(isbn)
-                .map(bookRecordMapper::bookRecordToResponseDTO);
+                .map(bookRecordMapper::bookRecordToResponseDTO)
+                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find a book record with id:" + isbn));
     }
 
     public boolean isTakenBook(String isbn) {
@@ -90,12 +94,12 @@ public class BookRecordService {
             BookRecord bookRecord = byISBN.get();
             return bookRecord.getDateTimeReturnOfBook() != null;
         }
-        return true;
+        throw new BookRecordNotFoundException("Unable to find a book record with isbn:" + isbn);
     }
 
     public BookRecordResponseDTO takeBook(String isbn) {
         if(isTakenBook(isbn)) {
-            return null;
+            throw new BookTakenException("Book with isbn" + isbn + " already taken");
         }
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
@@ -105,16 +109,16 @@ public class BookRecordService {
             bookRecord.setDateTimeReturnOfBook(dateTimeNow.plusDays(30));
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));
         }
-        return null;
+        throw new BookRecordNotFoundException("Unable to find book with isbn:" + isbn);
     }
 
     public BookRecordResponseDTO returnBook(String isbn) {
+        if(!isTakenBook(isbn)) {
+            throw new BookReturnedException("Book with isbn" + isbn + "already returned");
+        }
         Optional<BookRecord> maybeBookRecord = bookRecordRepository.findByISBN(isbn);
         if(maybeBookRecord.isPresent()) {
             BookRecord bookRecord = maybeBookRecord.get();
-            if(bookRecord.getDateTimeTakeOfBook() == null) {
-                return null;
-            }
             bookRecord.setDateTimeReturnOfBook(null);
             bookRecord.setDateTimeTakeOfBook(null);
             return bookRecordMapper.bookRecordToResponseDTO(bookRecordRepository.save(bookRecord));

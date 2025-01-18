@@ -106,7 +106,8 @@ public class BookService {
 
     public Optional<BookResponseDTO> findBookById(String isbn){
         Optional<Book> bookById = bookRepository.findById(isbn);
-        return bookById.map(bookMapper::bookToResponseDTO);
+        return Optional.ofNullable(bookById.map(bookMapper::bookToResponseDTO)
+                .orElseThrow(() -> new BookNotFoundException("Unable to find a book with isbn: " + isbn)));
     }
 
     public BookResponseDTO updateBook(String isbn, BookRequestDTO dto){

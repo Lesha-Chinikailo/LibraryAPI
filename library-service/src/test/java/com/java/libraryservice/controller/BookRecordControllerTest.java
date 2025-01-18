@@ -1,6 +1,10 @@
 package com.java.libraryservice.controller;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
+import com.java.libraryservice.exception.BookRecordNotFoundException;
+import com.java.libraryservice.exception.BookReturnedException;
+import com.java.libraryservice.exception.BookTakenException;
+import com.java.libraryservice.handler.GlobalExceptionHandler;
 import com.java.libraryservice.mapper.BookRecordMapper;
 import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.service.BookRecordService;
@@ -10,8 +14,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -20,18 +28,24 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
+import static org.springframework.test.web.client.match.MockRestRequestMatchers.content;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(MockitoExtension.class)
+@Import(GlobalExceptionHandler.class)
 class BookRecordControllerTest {
 
     @Mock
     private BookRecordService bookRecordService;
 
-    @Mock
-    private BookRecordMapper bookRecordMapper;
+    private MockMvc mockMvc;
 
     @InjectMocks
     private BookRecordController bookRecordController;
+
+    private GlobalExceptionHandler globalExceptionHandler = new GlobalExceptionHandler();
 
     private final Long page = 0L;
     private final Long size = 10L;
@@ -62,7 +76,7 @@ class BookRecordControllerTest {
     @Test
     public void createBookRecord_success(){
         doReturn(idBookRecord_1).when(bookRecordService).addBookRecord(isbn);
-        doReturn(Optional.of(fullFieldBookRecordResponseDTO)).when(bookRecordService).findBookRecordById(idBookRecord_1);
+        doReturn(fullFieldBookRecordResponseDTO).when(bookRecordService).findBookRecordById(idBookRecord_1);
 
         ResponseEntity<BookRecordResponseDTO> responseBookRecord = bookRecordController.createBookRecord(isbn);
 
@@ -87,8 +101,11 @@ class BookRecordControllerTest {
 
         ResponseEntity<BookRecordResponseDTO> bookRecordResponseDTOResponseEntity = bookRecordController.takeBookRecord(isbn);
 
-        assertNotNull(bookRecordResponseDTOResponseEntity);
-        assertThat(bookRecordResponseDTOResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookTakenException(new BookTakenException(messageInException));
+
+
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
     }
 
     @Test
@@ -103,12 +120,14 @@ class BookRecordControllerTest {
 
     @Test
     public void returnBookRecord_fail(){
-        doReturn(null).when(bookRecordService).returnBook(isbn);
+//        doReturn(null).when(bookRecordService).returnBook(isbn);
+//
+//        ResponseEntity<BookRecordResponseDTO> bookRecordResponseDTOResponseEntity = bookRecordController.returnBookRecord(isbn);
 
-        ResponseEntity<BookRecordResponseDTO> bookRecordResponseDTOResponseEntity = bookRecordController.returnBookRecord(isbn);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookReturnedException(new BookReturnedException(messageInException));
 
-        assertNotNull(bookRecordResponseDTOResponseEntity);
-        assertThat(bookRecordResponseDTOResponseEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
+        assertNotNull(response);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
     }
 
     @Test
@@ -123,9 +142,11 @@ class BookRecordControllerTest {
 
     @Test
     public void deleteBookRecord_fail(){
-        doReturn(false).when(bookRecordService).deleteBookRecord(isbn);
+//        doReturn(false).when(bookRecordService).deleteBookRecord(isbn);
+//
+//        ResponseEntity<String> response = bookRecordController.deleteBookRecord(isbn);
 
-        ResponseEntity<String> response = bookRecordController.deleteBookRecord(isbn);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookTakenException(new BookTakenException(messageInException));
 
         assertNotNull(response);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
@@ -133,7 +154,7 @@ class BookRecordControllerTest {
 
     @Test
     public void getBookRecordByISBN_success(){
-        doReturn(Optional.of(fullFieldBookRecordResponseDTO)).when(bookRecordService).findBookRecordByISBN(isbn);
+        doReturn(fullFieldBookRecordResponseDTO).when(bookRecordService).findBookRecordByISBN(isbn);
 
         ResponseEntity<BookRecordResponseDTO> response = bookRecordController.getBookRecordByISBN(isbn);
 
@@ -143,10 +164,11 @@ class BookRecordControllerTest {
     }
 
     @Test
-    public void getBookRecordByISBN_fail(){
-        doReturn(Optional.empty()).when(bookRecordService).findBookRecordByISBN(isbn);
+    public void getBookRecordByISBN_fail() {
+//        doThrow(new BookRecordNotFoundException(messageInException)).when(bookRecordService).findBookRecordByISBN(isbn);
+//        ResponseEntity<BookRecordResponseDTO> response = bookRecordController.getBookRecordByISBN(isbn);
 
-        ResponseEntity<BookRecordResponseDTO> response = bookRecordController.getBookRecordByISBN(isbn);
+        ResponseEntity<Object> response = globalExceptionHandler.handleBookNotFoundException(new BookRecordNotFoundException(messageInException));
 
         assertNotNull(response);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);

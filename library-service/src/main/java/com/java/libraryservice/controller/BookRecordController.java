@@ -2,7 +2,6 @@ package com.java.libraryservice.controller;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
 import com.java.libraryservice.mapper.BookRecordMapper;
-import com.java.libraryservice.models.BookRecord;
 import com.java.libraryservice.service.BookRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -10,8 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -35,15 +32,8 @@ public class BookRecordController {
 
     @GetMapping("/isbn/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> getBookRecordByISBN(@PathVariable String isbn) {
-        Optional<BookRecordResponseDTO> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn);
-        return bookRecordByISBN
-                .map(bookRecord -> new ResponseEntity<>(
-                        bookRecord,
-                        HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(
-                        new BookRecordResponseDTO(),
-                        HttpStatus.NOT_FOUND));
-
+        BookRecordResponseDTO bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn);
+        return new ResponseEntity<>(bookRecordByISBN, HttpStatus.OK);
     }
 
     @GetMapping("/")
@@ -69,27 +59,25 @@ public class BookRecordController {
     @PostMapping("/")
     public ResponseEntity<BookRecordResponseDTO> createBookRecord(@RequestBody String isbn) {
         Long bookRecordId = bookRecordService.addBookRecord(isbn);
-        Optional<BookRecordResponseDTO> bookRecordResponseById = bookRecordService.findBookRecordById(bookRecordId);
-        return bookRecordResponseById
-                .map(bookRecord -> new ResponseEntity<>(bookRecord, HttpStatus.OK))
-                .orElseGet(() -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
+        BookRecordResponseDTO bookRecordResponseById = bookRecordService.findBookRecordById(bookRecordId);
+        return new ResponseEntity<>(bookRecordResponseById, HttpStatus.OK);
     }
 
     @PutMapping("take/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> takeBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.takeBook(isbn);
-        if (bookRecordResponseDTO == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+//        if (bookRecordResponseDTO == null) {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
         return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
     }
 
     @PutMapping("return/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> returnBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.returnBook(isbn);
-        if (bookRecordResponseDTO == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+//        if (bookRecordResponseDTO == null) {
+//            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+//        }
         return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
     }
 

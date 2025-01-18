@@ -1,9 +1,13 @@
 package com.java.libraryservice.service;
 
 import com.java.libraryservice.controller.dto.BookRecordResponseDTO;
-import com.java.libraryservice.models.BookRecord;
+import com.java.libraryservice.exception.BookRecordNotFoundException;
+import com.java.libraryservice.exception.BookReturnedException;
+import com.java.libraryservice.exception.BookTakenException;
+import org.junit.Rule;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.rules.ExpectedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.PropertySource;
@@ -16,7 +20,6 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -101,19 +104,17 @@ class BookRecordServiceTest {
 
     @Test
     void findBookRecordById() {
-        Optional<BookRecordResponseDTO> bookRecordDTOById = bookRecordService.findBookRecordById(id_1);
+        BookRecordResponseDTO bookRecordDTOById = bookRecordService.findBookRecordById(id_1);
 
-        assertThat(bookRecordDTOById).isPresent();
-        assertThat(bookRecordDTOById.get().getISBN()).isEqualTo(isbn_1);
+        assertThat(bookRecordDTOById.getISBN()).isEqualTo(isbn_1);
     }
 
     @Test
     void findBookRecordByISBN() {
-        Optional<BookRecordResponseDTO> bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
-        System.out.println(bookRecordDTOByISBN.get().getISBN());
-        System.out.println(bookRecordDTOByISBN.get().getId());
-        assertThat(bookRecordDTOByISBN).isPresent();
-        assertThat(bookRecordDTOByISBN.get().getId()).isEqualTo(id_1);
+        BookRecordResponseDTO bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
+        System.out.println(bookRecordDTOByISBN.getISBN());
+        System.out.println(bookRecordDTOByISBN.getId());
+        assertThat(bookRecordDTOByISBN.getId()).isEqualTo(id_1);
     }
 
     @Test
@@ -143,9 +144,10 @@ class BookRecordServiceTest {
     @Test
     void takeBook_whenBookIsTaken() {
         bookRecordService.takeBook(isbn_1);
-        BookRecordResponseDTO dto = bookRecordService.takeBook(isbn_1);
+        assertThrows(BookTakenException.class, () -> {
+            BookRecordResponseDTO dto = bookRecordService.takeBook(isbn_1);
+        });
 
-        assertThat(dto).isNull();
         boolean takenBook = bookRecordService.isTakenBook(isbn_1);
         assertThat(takenBook).isTrue();
     }
@@ -162,20 +164,21 @@ class BookRecordServiceTest {
 
     @Test
     void returnBook_whenBookIsNotTaken() {
-        BookRecordResponseDTO dto = bookRecordService.returnBook(isbn_1);
+        assertThrows(BookReturnedException.class, () -> {
+            BookRecordResponseDTO dto = bookRecordService.returnBook(isbn_1);
+        });
 
-        assertThat(dto).isNull();
         boolean takenBook = bookRecordService.isTakenBook(isbn_1);
         assertThat(takenBook).isFalse();
     }
 
-    @Test
+    @Test()
     void deleteBookRecord() {
-        boolean isDeleted = bookRecordService.deleteBookRecord(isbn_1);
-        Optional<BookRecordResponseDTO> bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
+        assertThrows(BookRecordNotFoundException.class, () -> {
+            boolean isDeleted = bookRecordService.deleteBookRecord(isbn_1);
+            BookRecordResponseDTO bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
 
-        assertThat(isDeleted).isTrue();
-        assertThat(bookRecordDTOByISBN).isEmpty();
-
+            assertThat(isDeleted).isTrue(); }
+        );
     }
 }
