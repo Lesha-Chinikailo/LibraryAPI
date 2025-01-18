@@ -34,7 +34,6 @@ class BookRecordServiceTest {
     private final String isbn_2 = "2222222222222";
     private final String isbn_3 = "3333333333333";
     private final Long id_1 = 1L;
-    private final Long id_2 = 2L;
     private String resetSequenceId = "ALTER SEQUENCE book_record_id_seq RESTART WITH 1";
     private int countBookRecordInit = 2;
 
@@ -54,7 +53,7 @@ class BookRecordServiceTest {
 
     @BeforeEach
     void init() {
-        List<String> allIsbn = bookRecordService.findAll(0L, Long.MAX_VALUE).stream().map(BookRecord::getISBN).toList();
+        List<String> allIsbn = bookRecordService.findAll(0L, Long.MAX_VALUE).stream().map(BookRecordResponseDTO::getISBN).toList();
         allIsbn.forEach(isbn -> bookRecordService.deleteBookRecord(isbn));
         jdbcTemplate.execute(resetSequenceId);
         allIsbn.forEach(isbn -> bookRecordService.deleteBookRecord(isbn));
@@ -66,19 +65,19 @@ class BookRecordServiceTest {
 
     @Test
     void findAll() {
-        List<BookRecord> allBookRecords = bookRecordService.findAll(0L, Long.MAX_VALUE);
+        List<BookRecordResponseDTO> allBookRecordDTOs = bookRecordService.findAll(0L, Long.MAX_VALUE);
 
-        assertNotNull(allBookRecords);
-        assertThat(allBookRecords).hasSize(countBookRecordInit);
+        assertNotNull(allBookRecordDTOs);
+        assertThat(allBookRecordDTOs).hasSize(countBookRecordInit);
 
     }
 
     @Test
     void findAllFreeBook() {
-        List<BookRecord> allBookRecords = bookRecordService.findAllFreeBook(0L, Long.MAX_VALUE);
+        List<BookRecordResponseDTO> allBookRecordDTOs = bookRecordService.findAllFreeBook(0L, Long.MAX_VALUE);
 
-        assertNotNull(allBookRecords);
-        assertThat(allBookRecords).hasSize(countBookRecordInit);
+        assertNotNull(allBookRecordDTOs);
+        assertThat(allBookRecordDTOs).hasSize(countBookRecordInit);
     }
 
     @Test
@@ -102,18 +101,19 @@ class BookRecordServiceTest {
 
     @Test
     void findBookRecordById() {
-        Optional<BookRecord> bookRecordById = bookRecordService.findBookRecordById(id_1);
+        Optional<BookRecordResponseDTO> bookRecordDTOById = bookRecordService.findBookRecordById(id_1);
 
-        assertThat(bookRecordById).isPresent();
-        assertThat(bookRecordById.get().getISBN()).isEqualTo(isbn_1);
+        assertThat(bookRecordDTOById).isPresent();
+        assertThat(bookRecordDTOById.get().getISBN()).isEqualTo(isbn_1);
     }
 
     @Test
     void findBookRecordByISBN() {
-        Optional<BookRecord> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
-
-        assertThat(bookRecordByISBN).isPresent();
-        assertThat(bookRecordByISBN.get().getId()).isEqualTo(id_1);
+        Optional<BookRecordResponseDTO> bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
+        System.out.println(bookRecordDTOByISBN.get().getISBN());
+        System.out.println(bookRecordDTOByISBN.get().getId());
+        assertThat(bookRecordDTOByISBN).isPresent();
+        assertThat(bookRecordDTOByISBN.get().getId()).isEqualTo(id_1);
     }
 
     @Test
@@ -172,10 +172,10 @@ class BookRecordServiceTest {
     @Test
     void deleteBookRecord() {
         boolean isDeleted = bookRecordService.deleteBookRecord(isbn_1);
-        Optional<BookRecord> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
+        Optional<BookRecordResponseDTO> bookRecordDTOByISBN = bookRecordService.findBookRecordByISBN(isbn_1);
 
         assertThat(isDeleted).isTrue();
-        assertThat(bookRecordByISBN).isEmpty();
+        assertThat(bookRecordDTOByISBN).isEmpty();
 
     }
 }

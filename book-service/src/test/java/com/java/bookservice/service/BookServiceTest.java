@@ -1,6 +1,7 @@
 package com.java.bookservice.service;
 
 import com.java.bookservice.controller.dto.BookRequestDTO;
+import com.java.bookservice.controller.dto.BookResponseDTO;
 import com.java.bookservice.models.Book;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -62,7 +63,7 @@ class BookServiceTest {
 
     @BeforeEach
     void init() {
-        List<String> listIsbn = bookService.getAllBooks(0L, Long.MAX_VALUE).stream().map(Book::getISBN).toList();
+        List<String> listIsbn = bookService.getAllBooks(0L, Long.MAX_VALUE).stream().map(BookResponseDTO::getISBN).toList();
         preparationMockServiceResponseInitMethod(listIsbn);
         listIsbn.forEach(isbn -> bookService.deleteBook(isbn));
 
@@ -99,22 +100,22 @@ class BookServiceTest {
         bookService.createBook(bookRequestDTO);
         int sizeAfterSave = bookService.getAllBooks(0L, Long.MAX_VALUE).size();
 
-        Optional<Book> byId = bookService.findBookById(isbn_3);
-        assertTrue(byId.isPresent());
-        assertThat(byId.get().getISBN()).isEqualTo(isbn_3);
+        Optional<BookResponseDTO> dtoById = bookService.findBookById(isbn_3);
+        assertTrue(dtoById.isPresent());
+        assertThat(dtoById.get().getISBN()).isEqualTo(isbn_3);
         assertThat(sizeAfterSave).isEqualTo(sizeBeforeSave + 1);
     }
 
     @Test
     void getAllBooks() {
-        List<Book> allBooks = bookService.getAllBooks(0L, Long.MAX_VALUE);
-        assertThat(allBooks).isNotNull();
-        assertThat(allBooks.size()).isEqualTo(2);
+        List<BookResponseDTO> BookResponseDTOs = bookService.getAllBooks(0L, Long.MAX_VALUE);
+        assertThat(BookResponseDTOs).isNotNull();
+        assertThat(BookResponseDTOs.size()).isEqualTo(2);
     }
 
     @Test
     void findBookById() {
-        Optional<Book> byId = bookService.findBookById(isbn_1);
+        Optional<BookResponseDTO> byId = bookService.findBookById(isbn_1);
         assertTrue(byId.isPresent());
         assertThat(byId.get().getISBN()).isEqualTo(isbn_1);
     }
@@ -131,8 +132,8 @@ class BookServiceTest {
                 .author("author 3")
                 .build();
 
-        Book book = bookService.updateBook(isbn_1, bookRequestDTO);
-        Optional<Book> byId = bookService.findBookById(isbn_1);
+        BookResponseDTO bookResponseDTO = bookService.updateBook(isbn_1, bookRequestDTO);
+        Optional<BookResponseDTO> byId = bookService.findBookById(isbn_1);
         assertTrue(byId.isPresent());
         assertThat(byId.get().getISBN()).isEqualTo(isbn_1);
         assertThat(byId.get().getTitle()).isEqualTo(bookRequestDTO.getTitle());
@@ -144,7 +145,7 @@ class BookServiceTest {
         preparationBeforeDeleteMethod(isbn_1);
         bookService.deleteBook(isbn_1);
 
-        Optional<Book> byId = bookService.findBookById(isbn_1);
+        Optional<BookResponseDTO> byId = bookService.findBookById(isbn_1);
         assertTrue(byId.isEmpty());
     }
 

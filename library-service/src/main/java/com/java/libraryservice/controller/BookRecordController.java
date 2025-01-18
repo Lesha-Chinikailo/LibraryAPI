@@ -22,12 +22,10 @@ public class BookRecordController {
 
     @GetMapping("/free")
     public ResponseEntity<List<BookRecordResponseDTO>> getFreeBookRecords(@RequestParam(defaultValue = "0") Long page,
-                                                          @RequestParam(defaultValue = "10") Long size) {
-        return new ResponseEntity<>(bookRecordService.findAllFreeBook(page, size)
-                .stream()
-                .map(bookRecordMapper::bookRecordToResponseDTO)
-                .collect(Collectors.toList())
-                , HttpStatus.OK);
+                                                                          @RequestParam(defaultValue = "10") Long size) {
+        return new ResponseEntity<>(
+                bookRecordService.findAllFreeBook(page, size),
+                HttpStatus.OK);
     }
 
     @GetMapping("/isTaken/{isbn}")
@@ -37,14 +35,14 @@ public class BookRecordController {
 
     @GetMapping("/isbn/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> getBookRecordByISBN(@PathVariable String isbn) {
-        Optional<BookRecord> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn);
+        Optional<BookRecordResponseDTO> bookRecordByISBN = bookRecordService.findBookRecordByISBN(isbn);
         return bookRecordByISBN
                 .map(bookRecord -> new ResponseEntity<>(
-                bookRecordMapper.bookRecordToResponseDTO(bookRecord),
-                HttpStatus.OK))
+                        bookRecord,
+                        HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(
-                new BookRecordResponseDTO(),
-                HttpStatus.NOT_FOUND));
+                        new BookRecordResponseDTO(),
+                        HttpStatus.NOT_FOUND));
 
     }
 
@@ -54,16 +52,13 @@ public class BookRecordController {
         if (page < 0 || size < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return new ResponseEntity<>(bookRecordService.findAll(page, size)
-                .stream()
-                .map(bookRecordMapper::bookRecordToResponseDTO)
-                .collect(Collectors.toList()),
+        return new ResponseEntity<>(
+                bookRecordService.findAll(page, size),
                 HttpStatus.OK);
     }
 
     @GetMapping("/free/ids")
-    public ResponseEntity<List<String>> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page,
-                                           @RequestParam(defaultValue = "10") Long size) {
+    public ResponseEntity<List<String>> getFreeBookRecordIds(@RequestParam(defaultValue = "0") Long page, @RequestParam(defaultValue = "10") Long size) {
 
         if (page < 0 || size < 0) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
@@ -74,16 +69,16 @@ public class BookRecordController {
     @PostMapping("/")
     public ResponseEntity<BookRecordResponseDTO> createBookRecord(@RequestBody String isbn) {
         Long bookRecordId = bookRecordService.addBookRecord(isbn);
-        Optional<BookRecord> bookRecordById = bookRecordService.findBookRecordById(bookRecordId);
-        return bookRecordById
-                .map(bookRecord -> new ResponseEntity<>(bookRecordMapper.bookRecordToResponseDTO(bookRecord), HttpStatus.OK))
+        Optional<BookRecordResponseDTO> bookRecordResponseById = bookRecordService.findBookRecordById(bookRecordId);
+        return bookRecordResponseById
+                .map(bookRecord -> new ResponseEntity<>(bookRecord, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR));
     }
 
     @PutMapping("take/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> takeBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.takeBook(isbn);
-        if(bookRecordResponseDTO == null){
+        if (bookRecordResponseDTO == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
@@ -92,7 +87,7 @@ public class BookRecordController {
     @PutMapping("return/{isbn}")
     public ResponseEntity<BookRecordResponseDTO> returnBookRecord(@PathVariable String isbn) {
         BookRecordResponseDTO bookRecordResponseDTO = bookRecordService.returnBook(isbn);
-        if(bookRecordResponseDTO == null){
+        if (bookRecordResponseDTO == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
         return new ResponseEntity<>(bookRecordResponseDTO, HttpStatus.OK);
@@ -101,10 +96,9 @@ public class BookRecordController {
     @DeleteMapping("/{isbn}")
     public ResponseEntity<String> deleteBookRecord(@PathVariable String isbn) {
         boolean isDeleted = bookRecordService.deleteBookRecord(isbn);
-        if(isDeleted){
+        if (isDeleted) {
             return ResponseEntity.ok("Book with isbn: " + isbn + " has been deleted successfully");
-        }
-        else {
+        } else {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Failed to delete book with isbn: " + isbn);
         }
     }

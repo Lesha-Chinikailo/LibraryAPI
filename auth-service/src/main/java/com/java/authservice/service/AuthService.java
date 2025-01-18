@@ -13,12 +13,16 @@ import org.springframework.stereotype.Service;
 public class AuthService {
     @Autowired
     private UserRepository userRepository;
+
     @Autowired
     private UserMapper userMapper;
+
     @Autowired
     private JwtService jwtService;
+
     @Autowired
     private PasswordEncoder passwordEncoder;
+
     private final String BEARER_TOKEN_PREFIX = "Bearer ";
 
     public UserResponseDTO saveUser(UserRequestDTO dto) {

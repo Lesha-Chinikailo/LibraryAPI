@@ -24,9 +24,20 @@ public class AuthConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        String[] patterns = {
+                "/swagger-ui/**",
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/swagger-resources",
+                "/register",
+                "/token",
+                "/validate"
+        };
+
+
         http.csrf(csrf -> csrf.disable());
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/auth/register", "/register", "/token", "/validate").permitAll()
+                .requestMatchers(patterns).permitAll()
                 .anyRequest()
                 .authenticated() );
         return http.build();

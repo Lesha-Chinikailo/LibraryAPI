@@ -29,27 +29,25 @@ public class BookController {
 
     @GetMapping("/{isbn}")
     public ResponseEntity<BookResponseDTO> getBookById(@PathVariable String isbn) {
-        Optional<Book> maybeBook = bookService.findBookById(isbn);
-        return maybeBook
-                .map(book -> new ResponseEntity<>(bookMapper.bookToResponseDTO(book), HttpStatus.OK))
+        Optional<BookResponseDTO> maybeBookResponseDTO = bookService.findBookById(isbn);
+        return maybeBookResponseDTO
+                .map(dto -> new ResponseEntity<>(dto, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @GetMapping("/")
     public ResponseEntity<List<BookResponseDTO>> getAllBook(@RequestParam(defaultValue = "0") Long page,
                                             @RequestParam(defaultValue = "10") Long size) {
-        return new ResponseEntity(
-                bookService.getAllBooks(page, size)
-                .stream()
-                .map(bookMapper::bookToResponseDTO)
-                .collect(Collectors.toList()),
+
+        return new ResponseEntity<>(
+                bookService.getAllBooks(page, size),
                 HttpStatus.OK);
     }
 
     @GetMapping("/freeBooks")
     public ResponseEntity<List<BookResponseDTO>> getAllFreeBooks(@RequestParam(defaultValue = "0") Long page,
                                                                  @RequestParam(defaultValue = "10") Long size) {
-        List<Book> allFreeBook;
+        List<BookResponseDTO> allFreeBook;
         try{
             allFreeBook = bookService.getAllFreeBook(page, size);
         }
@@ -58,10 +56,7 @@ public class BookController {
         }
 
         return new ResponseEntity<>(
-                allFreeBook
-                        .stream()
-                        .map(bookMapper::bookToResponseDTO)
-                        .collect(Collectors.toList()),
+                allFreeBook,
                 HttpStatus.OK);
     }
 
@@ -74,15 +69,15 @@ public class BookController {
         catch (ServiceUnavailableException e) {
             return new ResponseEntity<>(HttpStatus.SERVICE_UNAVAILABLE);
         }
-        return new ResponseEntity<>(bookMapper.bookToResponseDTO(bookService.findBookById(bookISBN).get()), HttpStatus.CREATED);
+        return new ResponseEntity<>(bookService.findBookById(bookISBN).get(), HttpStatus.CREATED);
     }
 
     @PutMapping("/{isbn}")
     public ResponseEntity<BookResponseDTO> updateBook(@PathVariable String isbn,
                                                       @RequestBody BookRequestDTO bookRequestDTO) {
-        Book book;
+        BookResponseDTO bookResponseDTO;
         try{
-            book = bookService.updateBook(isbn, bookRequestDTO);
+            bookResponseDTO = bookService.updateBook(isbn, bookRequestDTO);
         }
         catch (BookNotFoundException | BookTakenException e){
             return new ResponseEntity<>(new BookResponseDTO(), HttpStatus.NOT_FOUND);
@@ -90,7 +85,7 @@ public class BookController {
         catch (ServiceUnavailableException e){
             return new ResponseEntity<>(new BookResponseDTO(), HttpStatus.SERVICE_UNAVAILABLE);
         }
-        return new ResponseEntity<>(bookMapper.bookToResponseDTO(book), HttpStatus.OK);
+        return new ResponseEntity<>(bookResponseDTO, HttpStatus.OK);
     }
 
     @DeleteMapping("/{isbn}")

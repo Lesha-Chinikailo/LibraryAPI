@@ -38,20 +38,22 @@ public class BookRecordService {
         }
     }
 
-    public List<BookRecord> findAll(Long pageNumber, Long pageSize) {
+    public List<BookRecordResponseDTO> findAll(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
                 .skip((pageNumber) * pageSize)
                 .limit(pageSize)
+                .map(bookRecordMapper::bookRecordToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<BookRecord> findAllFreeBook(Long pageNumber, Long pageSize) {
+    public List<BookRecordResponseDTO> findAllFreeBook(Long pageNumber, Long pageSize) {
         return bookRecordRepository.findAll()
                 .stream()
                 .filter(b -> b.getDateTimeTakeOfBook() == null)
                 .skip((pageNumber) * pageSize)
                 .limit(pageSize)
+                .map(bookRecordMapper::bookRecordToResponseDTO)
                 .toList();
     }
     public List<String> findAllFreeBookIds(Long pageNumber, Long pageSize) {
@@ -72,14 +74,14 @@ public class BookRecordService {
         return bookRecordRepository.save(record).getId();
     }
 
-    public Optional<BookRecord> findBookRecordById(Long id) {
+    public Optional<BookRecordResponseDTO> findBookRecordById(Long id) {
         Optional<BookRecord> bookRecordById = bookRecordRepository.findById(id);
-        return Optional.of(bookRecordById)
-                .orElseThrow(() -> new BookRecordNotFoundException("Unable to find book record with id: " + id));
+        return bookRecordById.map(bookRecordMapper::bookRecordToResponseDTO);
     }
 
-    public Optional<BookRecord> findBookRecordByISBN(String isbn) {
-        return bookRecordRepository.findByISBN(isbn);
+    public Optional<BookRecordResponseDTO> findBookRecordByISBN(String isbn) {
+        return bookRecordRepository.findByISBN(isbn)
+                .map(bookRecordMapper::bookRecordToResponseDTO);
     }
 
     public boolean isTakenBook(String isbn) {

@@ -14,6 +14,5 @@ public interface BookRecordMapper {
 
     BookRecord RequestDTOToBook(BookRecordRequestDTO dto);
 
-//    @Mapping(source = "isbn", target = "isbn")
     BookRecordResponseDTO bookRecordToResponseDTO(BookRecord bookRecord);
 }

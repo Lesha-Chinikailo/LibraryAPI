@@ -1,7 +1,7 @@
 package com.java.bookservice.service;
 
-import com.java.bookservice.controller.dto.BookRecordResponseDTO;
 import com.java.bookservice.controller.dto.BookRequestDTO;
+import com.java.bookservice.controller.dto.BookResponseDTO;
 import com.java.bookservice.exception.BookNotFoundException;
 import com.java.bookservice.exception.BookRecordNotDeleteException;
 import com.java.bookservice.exception.BookTakenException;
@@ -55,7 +55,7 @@ public class BookService {
 
         HttpEntity<String> requestEntity = new HttpEntity<>(bookSaved.getISBN(), headers);
 
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, requestEntity, String.class);
+        restTemplate.postForEntity(url, requestEntity, String.class);
         return bookSaved.getISBN();
     }
 
@@ -74,15 +74,16 @@ public class BookService {
         return Boolean.TRUE.equals(responseEntity.getBody());
     }
 
-    public List<Book> getAllBooks(Long pageNumber, Long pageSize){
+    public List<BookResponseDTO> getAllBooks(Long pageNumber, Long pageSize){
         return bookRepository.findAll()
                 .stream()
                 .skip((pageNumber) * pageSize)
                 .limit(pageSize)
+                .map(bookMapper::bookToResponseDTO)
                 .collect(Collectors.toList());
     }
 
-    public List<Book> getAllFreeBook(Long pageNumber, Long pageSize){
+    public List<BookResponseDTO> getAllFreeBook(Long pageNumber, Long pageSize){
         if(!isServiceAvailable()){
             throw new ServiceUnavailableException("Sorry, library is not available. Try again later");
         }
@@ -97,14 +98,18 @@ public class BookService {
                 ? Arrays.stream(body).toList()
                 : new ArrayList<>();
 
-        return bookRepository.findAllById(list);
+        return bookRepository.findAllById(list)
+                .stream()
+                .map(bookMapper::bookToResponseDTO)
+                .toList();
     }
 
-    public Optional<Book> findBookById(String isbn){
-        return bookRepository.findById(isbn);
+    public Optional<BookResponseDTO> findBookById(String isbn){
+        Optional<Book> bookById = bookRepository.findById(isbn);
+        return bookById.map(bookMapper::bookToResponseDTO);
     }
 
-    public Book updateBook(String isbn, BookRequestDTO dto){
+    public BookResponseDTO updateBook(String isbn, BookRequestDTO dto){
         if(findBookById(isbn).isEmpty()){
             throw new BookNotFoundException("Unable to find a book with isbn: " + isbn);
         }
@@ -117,12 +122,12 @@ public class BookService {
             throw new BookTakenException("Sorry, book with isbn: " + isbn + " is taken or not exist");
         }
 
-        Book book = findBookById(isbn).get();
+        Book book = bookRepository.findById(isbn).get();
         book.setTitle(dto.getTitle());
         book.setGenre(dto.getGenre());
         book.setDescription(dto.getDescription());
         book.setAuthor(dto.getAuthor());
-        return bookRepository.save(book);
+        return bookMapper.bookToResponseDTO(bookRepository.save(book));
     }
 
     public boolean deleteBook(String isbn){
@@ -146,7 +151,7 @@ public class BookService {
         String urlGet = configProperties.getProperty("url.getBookRecordByISBN");
         urlGet += isbn;
         try{
-            var response = restTemplate.getForEntity(urlGet, BookRecordResponseDTO.class);
+            var response = restTemplate.getForEntity(urlGet, Object.class);
             if(response.getStatusCode().is2xxSuccessful()){
                 throw new BookRecordNotDeleteException("Book record do not delete in the library service");
             }

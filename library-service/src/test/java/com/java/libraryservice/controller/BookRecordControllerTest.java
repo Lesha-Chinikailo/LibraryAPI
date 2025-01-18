@@ -62,8 +62,7 @@ class BookRecordControllerTest {
     @Test
     public void createBookRecord_success(){
         doReturn(idBookRecord_1).when(bookRecordService).addBookRecord(isbn);
-        doReturn(Optional.of(fullFieldBookRecord)).when(bookRecordService).findBookRecordById(idBookRecord_1);
-        doReturn(fullFieldBookRecordResponseDTO).when(bookRecordMapper).bookRecordToResponseDTO(fullFieldBookRecord);
+        doReturn(Optional.of(fullFieldBookRecordResponseDTO)).when(bookRecordService).findBookRecordById(idBookRecord_1);
 
         ResponseEntity<BookRecordResponseDTO> responseBookRecord = bookRecordController.createBookRecord(isbn);
 
@@ -134,8 +133,7 @@ class BookRecordControllerTest {
 
     @Test
     public void getBookRecordByISBN_success(){
-        doReturn(Optional.of(fullFieldBookRecord)).when(bookRecordService).findBookRecordByISBN(isbn);
-        doReturn(fullFieldBookRecordResponseDTO).when(bookRecordMapper).bookRecordToResponseDTO(fullFieldBookRecord);
+        doReturn(Optional.of(fullFieldBookRecordResponseDTO)).when(bookRecordService).findBookRecordByISBN(isbn);
 
         ResponseEntity<BookRecordResponseDTO> response = bookRecordController.getBookRecordByISBN(isbn);
 
@@ -160,12 +158,10 @@ class BookRecordControllerTest {
         BookRecord bookRecord_2 = BookRecord.builder().ISBN(wrongIsbn).id(idBookRecord_2).build();
         BookRecordResponseDTO bookRecordResponseDTO_1 = BookRecordResponseDTO.builder().ISBN(bookRecord_1.getISBN()).build();
         BookRecordResponseDTO bookRecordResponseDTO_2 = BookRecordResponseDTO.builder().ISBN(bookRecord_2.getISBN()).build();
-        List<BookRecord> expectedBooks = List.of(
-                bookRecord_1,
-                bookRecord_2);
+        List<BookRecordResponseDTO> expectedBooks = List.of(
+                bookRecordResponseDTO_1,
+                bookRecordResponseDTO_2);
         doReturn(expectedBooks).when(bookRecordService).findAll(page, size);
-        doReturn(bookRecordResponseDTO_1).when(bookRecordMapper).bookRecordToResponseDTO(bookRecord_1);
-        doReturn(bookRecordResponseDTO_2).when(bookRecordMapper).bookRecordToResponseDTO(bookRecord_2);
 
         ResponseEntity<List<BookRecordResponseDTO>> allBook = bookRecordController.getBookRecords(page, size);
 
@@ -188,10 +184,6 @@ class BookRecordControllerTest {
 
     @Test
     public void getAllBooksIds_success() {
-//        BookRecord bookRecord_1 = BookRecord.builder().ISBN(isbn).id(idBookRecord_1).build();
-//        BookRecord bookRecord_2 = BookRecord.builder().ISBN(wrongIsbn).id(idBookRecord_2).build();
-//        BookRecordResponseDTO bookRecordResponseDTO_1 = BookRecordResponseDTO.builder().ISBN(bookRecord_1.getISBN()).build();
-//        BookRecordResponseDTO bookRecordResponseDTO_2 = BookRecordResponseDTO.builder().ISBN(bookRecord_2.getISBN()).build();
         List<String> expectedIds = List.of(
                 isbn,
                 wrongIsbn);
@@ -222,12 +214,10 @@ class BookRecordControllerTest {
         BookRecord bookRecord_2 = BookRecord.builder().ISBN(wrongIsbn).id(idBookRecord_2).build();
         BookRecordResponseDTO bookRecordResponseDTO_1 = BookRecordResponseDTO.builder().ISBN(bookRecord_1.getISBN()).build();
         BookRecordResponseDTO bookRecordResponseDTO_2 = BookRecordResponseDTO.builder().ISBN(bookRecord_2.getISBN()).build();
-        List<BookRecord> expectedBooks = List.of(
-                bookRecord_1,
-                bookRecord_2);
+        List<BookRecordResponseDTO> expectedBooks = List.of(
+                bookRecordResponseDTO_1,
+                bookRecordResponseDTO_2);
         doReturn(expectedBooks).when(bookRecordService).findAllFreeBook(page, size);
-        doReturn(bookRecordResponseDTO_1).when(bookRecordMapper).bookRecordToResponseDTO(bookRecord_1);
-        doReturn(bookRecordResponseDTO_2).when(bookRecordMapper).bookRecordToResponseDTO(bookRecord_2);
 
         ResponseEntity<List<BookRecordResponseDTO>> allBook = bookRecordController.getFreeBookRecords(page, size);
 
