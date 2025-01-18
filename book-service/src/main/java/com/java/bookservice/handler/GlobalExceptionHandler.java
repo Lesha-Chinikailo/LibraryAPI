@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-@ControllerAdvice
+@ControllerAdvice(basePackages = "com.java.bookservice.controller")
 public class GlobalExceptionHandler {
     @ExceptionHandler({BookNotFoundException.class})
     public ResponseEntity<Object> handleBookNotFoundException(BookNotFoundException exception) {
@@ -39,10 +39,10 @@ public class GlobalExceptionHandler {
                 .body(exception.getMessage());
     }
 
-    @ExceptionHandler({RuntimeException.class})
-    public ResponseEntity<Object> handleRuntimeException(RuntimeException exception) {
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(exception.getMessage());
-    }
+//    @ExceptionHandler({RuntimeException.class})
+//    public ResponseEntity<Object> handleRuntimeException(RuntimeException exception) {
+//        return ResponseEntity
+//                .status(HttpStatus.INTERNAL_SERVER_ERROR)
+//                .body(exception.getMessage());
+//    }
 }

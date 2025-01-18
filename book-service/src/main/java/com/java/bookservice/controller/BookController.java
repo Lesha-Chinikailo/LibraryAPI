@@ -21,7 +21,6 @@ import java.util.*;
 public class BookController {
 
     private final BookService bookService;
-    private final BookMapper bookMapper;
 
     @GetMapping("/{isbn}")
     public ResponseEntity<BookResponseDTO> getBookById(@PathVariable String isbn) {

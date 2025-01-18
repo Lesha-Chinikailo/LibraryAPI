@@ -21,17 +21,17 @@ public class AppConfig {
         return new RestTemplate();
     }
 
-    @Bean(name = "configProperties")
-    public Properties getConfigProperties() {
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("configuration.properties")) {
-            Properties properties = new Properties();
-            properties.load(stream);
-            return properties;
-        }
-        catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+//    @Bean(name = "configProperties")
+//    public Properties getConfigProperties() {
+//        try (InputStream stream = getClass().getClassLoader().getResourceAsStream("application.properties")) {
+//            Properties properties = new Properties();
+//            properties.load(stream);
+//            return properties;
+//        }
+//        catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
     @Bean
     public Validator getValidator() {
